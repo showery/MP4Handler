@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io
+END
+FileSystem.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/FileSystem.h
+END
+File.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/File.cpp
+END
+File_win32.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/File_win32.cpp
+END
+File_posix.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/File_posix.cpp
+END
+FileSystem.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/FileSystem.cpp
+END
+File.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/File.h
+END
+FileSystem_win32.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/FileSystem_win32.cpp
+END
+FileSystem_posix.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/492/releases/2.0.0/libplatform/io/FileSystem_posix.cpp
+END

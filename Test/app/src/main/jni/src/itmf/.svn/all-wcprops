@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/492/releases/2.0.0/src/itmf
+END
+generic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/generic.cpp
+END
+CoverArtBox.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/CoverArtBox.cpp
+END
+Tags.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/Tags.cpp
+END
+type.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/type.cpp
+END
+generic.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/generic.h
+END
+Tags.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/Tags.h
+END
+CoverArtBox.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/CoverArtBox.h
+END
+itmf.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/itmf.h
+END
+type.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/type.h
+END
+impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/itmf/impl.h
+END

@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2
+END
+sample.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/sample.h
+END
+track.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/track.h
+END
+platform.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/platform.h
+END
+track_prop.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/track_prop.h
+END
+chapter.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/chapter.h
+END
+mp4v2.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/mp4v2.h
+END
+streaming.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/streaming.h
+END
+isma.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/isma.h
+END
+project.h.in
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/project.h.in
+END
+itmf_generic.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/itmf_generic.h
+END
+general.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/general.h
+END
+itmf_tags.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/itmf_tags.h
+END
+file.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/file.h
+END
+file_prop.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/492/releases/2.0.0/include/mp4v2/file_prop.h
+END

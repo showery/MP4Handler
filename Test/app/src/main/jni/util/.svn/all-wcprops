@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/492/releases/2.0.0/util
+END
+mp4trackdump.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/util/mp4trackdump.cpp
+END
+mp4extract.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/492/releases/2.0.0/util/mp4extract.cpp
+END
+mp4subtitle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/492/releases/2.0.0/util/mp4subtitle.cpp
+END
+mp4info.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/492/releases/2.0.0/util/mp4info.cpp
+END
+mp4chaps.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/492/releases/2.0.0/util/mp4chaps.cpp
+END
+mp4tags.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/492/releases/2.0.0/util/mp4tags.cpp
+END
+mp4file.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/492/releases/2.0.0/util/mp4file.cpp
+END
+mp4track.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/492/releases/2.0.0/util/mp4track.cpp
+END
+impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/492/releases/2.0.0/util/impl.h
+END
+mp4art.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/util/mp4art.cpp
+END

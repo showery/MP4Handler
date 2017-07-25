@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/492/releases/2.0.0/src/qtff
+END
+ColorParameterBox.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/ColorParameterBox.h
+END
+coding.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/coding.cpp
+END
+PictureAspectRatioBox.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/PictureAspectRatioBox.cpp
+END
+qtff.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/qtff.h
+END
+impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/impl.h
+END
+PictureAspectRatioBox.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/PictureAspectRatioBox.h
+END
+ColorParameterBox.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/ColorParameterBox.cpp
+END
+coding.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/492/releases/2.0.0/src/qtff/coding.h
+END

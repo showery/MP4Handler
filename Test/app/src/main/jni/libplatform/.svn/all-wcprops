@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/492/releases/2.0.0/libplatform
+END
+platform.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform.h
+END
+warning.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/libplatform/warning.h
+END
+platform_win32.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform_win32.h
+END
+platform_posix.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform_posix.h
+END
+platform_win32_impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform_win32_impl.h
+END
+config.h.in
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/492/releases/2.0.0/libplatform/config.h.in
+END
+endian.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/492/releases/2.0.0/libplatform/endian.h
+END
+platform_base.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform_base.h
+END
+impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/492/releases/2.0.0/libplatform/impl.h
+END
+platform_win32.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/492/releases/2.0.0/libplatform/platform_win32.cpp
+END

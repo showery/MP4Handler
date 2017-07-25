@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/492/releases/2.0.0/src/bmff
+END
+typebmff.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/492/releases/2.0.0/src/bmff/typebmff.cpp
+END
+bmff.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/bmff/bmff.h
+END
+typebmff.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/492/releases/2.0.0/src/bmff/typebmff.h
+END
+impl.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/492/releases/2.0.0/src/bmff/impl.h
+END
