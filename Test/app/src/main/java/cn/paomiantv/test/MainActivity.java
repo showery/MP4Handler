@@ -9,9 +9,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import cn.paomiantv.mediasdk.Mp4Clip;
-import cn.paomiantv.mediasdk.Mp4Join;
-import cn.paomiantv.mediasdk.Mp4v2Helper;
+import cn.paomiantv.mediasdk.PMClip;
+import cn.paomiantv.mediasdk.PMStoryboard;
+import cn.paomiantv.mediasdk.PMEngine;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private final String clipSrc = Environment.getExternalStorageDirectory() + "/source.mp4";
@@ -38,59 +38,84 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mbtnJoin = (Button) findViewById(R.id.btn_clip);
         mbtnClip.setOnClickListener(this);
         mbtnJoin.setOnClickListener(this);
+        PMEngine.getInstance().init();
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.btn_clip:
-                Mp4Clip.ClipParam param = new Mp4Clip.ClipParam();
-                param.mSrc = clipSrc;
-                param.mDst = clipDst;
-                param.mStart = 2000l;
-                param.mDuration = 5000l;
-                Mp4v2Helper.getInstance().cropMp4(param, new Mp4Clip.ClipListener() {
+        switch (v.getId()) {
+            case R.id.btn_clip: {
+                PMStoryboard storyboard = PMEngine.getInstance().createStoryboard(clipDst);
+                PMClip clip = new PMClip(clipSrc, 2000l, 5000l);
+                storyboard.addClip(clip);
+                storyboard.setProcessListener(new PMStoryboard.ProcessListener() {
                     @Override
-                    public void onProgress(int progress) {
+                    public void onProgress(PMStoryboard storyboard, int progress) {
                         mtvClip.setText(progress);
                     }
 
                     @Override
-                    public void onFailed(int err, String description) {
-                        mtvClip.setText("error no: "+err+", reason: "+description);
+                    public void onFailed(PMStoryboard storyboard, int err, String description) {
+                        mtvClip.setText("error no: " + err + ", reason: " + description);
                     }
 
                     @Override
-                    public void onSuccess(String path) {
+                    public void onSuccess(PMStoryboard storyboard, String path) {
                         mtvClip.setText(path);
                     }
+
+                    @Override
+                    public void onAlways(PMStoryboard storyboard) {
+                        PMEngine.getInstance().destoryStoryboard(storyboard);
+                    }
                 });
-                break;
-            case R.id.btn_join:
+                storyboard.process();
+            }
+            break;
+            case R.id.btn_join: {
                 ArrayList<String> arrSrc = new ArrayList<>();
                 arrSrc.add(joinSrc1);
                 arrSrc.add(joinSrc2);
                 arrSrc.add(joinSrc3);
-                Mp4v2Helper.getInstance().joinMp4(joinDst, arrSrc, new Mp4Join.JoinListener(){
-
+                PMStoryboard storyboard = PMEngine.getInstance().createStoryboard(joinDst);
+                PMClip clip = new PMClip(joinSrc1, -1, -1);
+                storyboard.addClip(clip);
+                clip = new PMClip(joinSrc2,-1,-1);
+                storyboard.addClip(clip);
+                clip = new PMClip(joinSrc3,-1,-1);
+                storyboard.addClip(clip);
+                storyboard.setProcessListener(new PMStoryboard.ProcessListener() {
                     @Override
-                    public void onProgress(int progress) {
-                        mtvJoin.setText(progress);
+                    public void onProgress(PMStoryboard storyboard, int progress) {
+                        mtvClip.setText(progress);
                     }
 
                     @Override
-                    public void onFailed(int err, String description) {
-                        mtvJoin.setText("error no: "+err+", reason: "+description);
+                    public void onFailed(PMStoryboard storyboard, int err, String description) {
+                        mtvClip.setText("error no: " + err + ", reason: " + description);
                     }
 
                     @Override
-                    public void onSuccess(String path) {
-                        mtvJoin.setText(path);
+                    public void onSuccess(PMStoryboard storyboard, String path) {
+                        mtvClip.setText(path);
                     }
-                } );
-                break;
+
+                    @Override
+                    public void onAlways(PMStoryboard storyboard) {
+                        PMEngine.getInstance().destoryStoryboard(storyboard);
+                    }
+                });
+                storyboard.process();
+            }
+            break;
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PMEngine.getInstance().uninit();
     }
 }

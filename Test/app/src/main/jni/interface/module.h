@@ -24,8 +24,8 @@ namespace paomiantv
 class CModule
 {
   protected:
-    const s8 *m_pbyClazzName;
-    JNINativeMethod *m_pMethods;
+    const s8 *m_pbyClazzName[];
+    JNINativeMethod *m_pMethods[];
     s32 m_nCount;
 
   public:

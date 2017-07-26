@@ -25,7 +25,9 @@ class CMp4v2Module : public CModule
 public:
   CMp4v2Module();
   virtual ~CMp4v2Module();
-  static jboolean jni_clipMp4(JNIEnv *env, jobject jcutter, jstring src, jstring dst, jlong start, jlong duration);
+  BOOL32 hasSubModule();
+  static jboolean jni_clipMp4(JNIEnv *env, jobject jclip, jstring src, jstring dst, jlong start, jlong duration);
+  static jboolean jni_joinMp4(JNIEnv *env, jobject jjoin, jstring src, jstring dst);
 };
 }
 

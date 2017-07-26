@@ -16,26 +16,6 @@
 
 namespace paomiantv
 {
-void log_cb(MP4LogLevel loglevel, const char *fmt, va_list ap)
-{
-    switch (loglevel)
-    {
-    case MP4_LOG_NONE:
-        break;
-    case MP4_LOG_ERROR:
-        VLOGE(fmt, ap);
-        break;
-    case MP4_LOG_WARNING:
-        VLOGW(fmt, ap);
-        break;
-    case MP4_LOG_INFO:
-        VLOGI(fmt, ap);
-        break;
-    default:
-        VLOGI(fmt, ap);
-        break;
-    }
-}
 
 CMp4Clip::CMp4Clip(JNIEnv *env, jobject jcutter,
                    TMp4CutterParam *pCutterParam)
@@ -84,8 +64,6 @@ CMp4Clip::CMp4Clip(JNIEnv *env, jobject jcutter,
         return;
     }
     env->PopLocalFrame(NULL);
-
-    MP4SetLogCallback(log_cb);
 }
 
 // FIXME: when exit the application, it will sometimes prints this error log:
