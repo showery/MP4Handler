@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 #include "paomiantv.h"
-#include "modulemanager.h"
+#include "jnimodulemanager.h"
 jint JNI_OnLoad(JavaVM * vm, void * reserved)
 {
     JNIEnv * env = NULL;

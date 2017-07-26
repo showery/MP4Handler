@@ -64,8 +64,6 @@ CMp4Clip::CMp4Clip(JNIEnv *env, jobject jcutter,
         return;
     }
     env->PopLocalFrame(NULL);
-
-    MP4SetLogCallback(log_cb);
 }
 
 // FIXME: when exit the application, it will sometimes prints this error log:

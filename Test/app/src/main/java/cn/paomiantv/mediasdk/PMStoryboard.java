@@ -59,14 +59,14 @@ public class PMStoryboard {
         _cancel();
     }
 
-    protected void fireOnFailed(final PMStoryboard storyboard, final int error, final String description) {
+    protected void fireOnFailed(final int error, final String description) {
         try {
             if (mListener != null) {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         //已在主线程中，可以更新UI
-                        mListener.onFailed(storyboard, error, description);
+                        mListener.onFailed(PMStoryboard.this, error, description);
                     }
                 });
 
@@ -76,14 +76,14 @@ public class PMStoryboard {
         }
     }
 
-    protected void fireOnProgress(final PMStoryboard storyboard, final int progress) {
+    protected void fireOnProgress(final int progress) {
         try {
             if (mListener != null) {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         //已在主线程中，可以更新UI
-                        mListener.onProgress(storyboard, progress);
+                        mListener.onProgress(PMStoryboard.this, progress);
                     }
                 });
             }
@@ -92,14 +92,14 @@ public class PMStoryboard {
         }
     }
 
-    protected void fireOnSuccess(final PMStoryboard storyboard, final String path) {
+    protected void fireOnSuccess(final String path) {
         try {
             if (mListener != null) {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         //已在主线程中，可以更新UI
-                        mListener.onSuccess(storyboard, path);
+                        mListener.onSuccess(PMStoryboard.this, path);
                     }
                 });
 

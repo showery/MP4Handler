@@ -107,7 +107,9 @@ LOCAL_SRC_FILES:= \
     interface/mp4clip.cpp \
     interface/mp4join.cpp \
     interface/mp4extract.cpp \
-    interface/mp4v2module.cpp \
+    interface/jnimoduleclip.cpp \
+    interface/jnimodulestoryboard.cpp \
+    interface/jnimoduleengine.cpp \
     interface/paomiantv.cpp \
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \

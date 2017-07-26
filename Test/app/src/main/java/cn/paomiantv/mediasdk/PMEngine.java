@@ -22,9 +22,11 @@ public class PMEngine {
     }
 
     public void init() {
+        _init();
     }
 
     public void uninit() {
+        _uninit();
     }
 
     public PMStoryboard createStoryboard(String dst){
@@ -34,4 +36,9 @@ public class PMEngine {
     public void destoryStoryboard(PMStoryboard storyboard){
         storyboard.destory();
     }
+
+    private native void _init();
+    private native void _uninit();
+    // member accessed by native methods.
+    private int mNativeEngineAddress;
 }
