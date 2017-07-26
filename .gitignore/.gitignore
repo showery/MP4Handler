@@ -7,4 +7,6 @@
 **/captures
 **/*.txt
 **/.idea
-**/obj／
+**/obj/
+**/*.o
+**/*.o.d
