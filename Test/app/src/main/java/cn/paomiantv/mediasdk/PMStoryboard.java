@@ -22,6 +22,10 @@ public class PMStoryboard {
         _uninit();
     }
 
+    public boolean setBGM(String srcPath, long startCutTm,long durationCutTm, long startTm,long endTm) {
+        return _setBGM( srcPath,  startCutTm, durationCutTm,  startTm, endTm);
+
+    }
 
     public boolean addClip(PMClip clip) {
         return _addClip(clip);
@@ -112,6 +116,8 @@ public class PMStoryboard {
     private native boolean _init(String dstPath);
 
     private native boolean _uninit();
+
+    private native boolean _setBGM(String srcPath, long startCutTm,long durationCutTm, long startTm,long endTm);
 
     private native boolean _addClip(PMClip clip);
 

@@ -69,6 +69,22 @@
         "atom_vmhd.cpp": "c",
         "descriptors.cpp": "c",
         "mp4atom.cpp": "c",
-        "mp4descriptor.cpp": "c"
+        "mp4descriptor.cpp": "c",
+        "__config": "cpp",
+        "cstddef": "cpp",
+        "exception": "cpp",
+        "initializer_list": "cpp",
+        "new": "cpp",
+        "stdexcept": "cpp",
+        "__functional_base": "cpp",
+        "locale": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "__split_buffer": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "type_traits": "cpp",
+        "iterator": "cpp"
     }
 }

@@ -1,0 +1,6 @@
+#ifndef _PAOMIANTV_AUTOFILE_H_
+#define _PAOMIANTV_AUTOFILE_H_
+
+#define MAX_LEN_FILE_PATH 512
+
+#endif
