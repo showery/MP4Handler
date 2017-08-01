@@ -1,12 +1,12 @@
 /*******************************************************************************
- *        Module: paomiantv
+ *        Module: mediasdk
  *          File: 
  * Functionality: mp4 parser
  *       Related: 
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2017 PAOMIANTV, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
@@ -19,11 +19,7 @@
 #include "autolock.h"
 #include "version.h"
 #include "autolog.h"
-#include "jnimodule.h"
 #include "stdlib.h"
-#include "jnimoduleengine.h"
-#include "jnimodulestoryboard.h"
-#include "jnimoduleclip.h"
 
 namespace paomiantv {
 

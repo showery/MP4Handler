@@ -1,6 +1,17 @@
-//
-// Created by John.Huang on 2017/7/31.
-//
+/*******************************************************************************
+ *        Module: paomiantv
+ *          File: jnimodulefilter.cpp
+ * Functionality: filter jni.
+ *       Related: mediasdk
+ *        System: android
+ *      Language: C++
+ *        Author: huangxuefeng
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
+ * -----------------------------------------------------------------------------
+ * Revisions:
+ * Date        Version     Reviser       Description
+ * 2017-07-30  v1.0        huangxuefeng  created
+ ******************************************************************************/
 
 
 #include "jnimodulemanager.h"
@@ -54,7 +65,7 @@ namespace paomiantv {
         if (m_pFilter != NULL) {
             LOGD("Filter instance allocated: %u", sizeof(CFilter));
             // only register valid ones
-            CJNIModuleManger::getInstance()->add(this);
+            CJNIModuleManager::getInstance()->add(this);
         } else {
             LOGE("new filter failed ,memory is not enough!");
         }
@@ -82,7 +93,7 @@ namespace paomiantv {
         }
 
         // be sure unregister before killing
-        CJNIModuleManger::getInstance()->remove(this);
+        CJNIModuleManager::getInstance()->remove(this);
     }
 
     CJNIModuleFilter *CJNIModuleFilter::CreateJniFilter(JNIEnv *env, jobject jFilter) {
@@ -105,14 +116,14 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jFilter, jfld);
-            if (nValue != 0 && CJNIModuleManger::getInstance()->contains((CJNIModule *) nValue)) {
+            if (nValue != 0 && CJNIModuleManager::getInstance()->contains((CJNIModule *) nValue)) {
                 LOGI("the CJNIModuleFilter is already created");
                 ret = (CJNIModuleFilter *) nValue;
                 break;
             }
 
             CJNIModuleFilter *pNew = new CJNIModuleFilter(env, jFilter, jfld);
-            if (!CJNIModuleManger::getInstance()->contains(pNew)) {
+            if (!CJNIModuleManager::getInstance()->contains(pNew)) {
                 LOGE("create CJNIModuleFilter failed");
                 delete pNew;
                 ret = NULL;
@@ -134,7 +145,7 @@ namespace paomiantv {
     void CJNIModuleFilter::DestroyJniFilter(CJNIModuleFilter *&p) {
         USE_LOG;
 
-        if (p == NULL || !CJNIModuleManger::getInstance()->contains(p)) {
+        if (p == NULL || !CJNIModuleManager::getInstance()->contains(p)) {
             LOGE("invalid parameters");
             return;
         }
@@ -183,7 +194,7 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jFilter, jfld);
-            if (nValue == 0 || !CJNIModuleManger::getInstance()->contains((CJNIModuleFilter *) nValue)) {
+            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleFilter *) nValue)) {
                 //LOGE("get jni Filter from java object failed");
                 //return NULL;
                 LOGI("try to get a new CJNIModuleFilter");
@@ -200,7 +211,7 @@ namespace paomiantv {
 
     bool CJNIModuleFilter::IsValid(CJNIModuleFilter *p) {
         // checks residency validity
-        return CJNIModuleManger::getInstance()->contains(p);
+        return CJNIModuleManager::getInstance()->contains(p);
     }
 
     jboolean CJNIModuleFilter::jni_init(JNIEnv *env, jobject jFilter, jstring jsrc, jlong jstart, jlong jduration) {

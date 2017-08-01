@@ -1,12 +1,12 @@
 /*******************************************************************************
  *        Module: paomiantv
  *          File: 
- * Functionality: load jni modules
+ * Functionality: define jni objects manager
  *       Related: 
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2017 PAOMIANTV, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
@@ -25,24 +25,24 @@
 
 namespace paomiantv {
 
-    class CJNIModuleManger {
+    class CJNIModuleManager {
     private:
-        CJNIModuleManger();
+        CJNIModuleManager();
 
-        CJNIModuleManger(const CJNIModuleManger &);
+        CJNIModuleManager(const CJNIModuleManager &);
 
-        CJNIModuleManger &operator=(const CJNIModuleManger &);
+        CJNIModuleManager &operator=(const CJNIModuleManager &);
 
-        virtual ~CJNIModuleManger();
+        virtual ~CJNIModuleManager();
 
-        static CJNIModuleManger *m_pInstance;
+        static CJNIModuleManager *m_pInstance;
         CResidentReg m_Registry;
 
         class Garbo {
         public:
             ~Garbo() {
-                if (CJNIModuleManger::m_pInstance) {
-                    delete CJNIModuleManger::m_pInstance;
+                if (CJNIModuleManager::m_pInstance) {
+                    delete CJNIModuleManager::m_pInstance;
                 }
             }
         };
@@ -50,7 +50,7 @@ namespace paomiantv {
         static Garbo garbo;
 
     public:
-        static CJNIModuleManger *getInstance();
+        static CJNIModuleManager *getInstance();
 
         void add(void *p);
         void remove(void *p);

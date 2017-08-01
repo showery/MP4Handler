@@ -1,27 +1,24 @@
 /*******************************************************************************
- *        Module: renderer
+ *        Module: render
  *          File: renderer.cpp
  * Functionality: rendering video onto opengl context.
  *       Related: GLES2
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
- * 2013-07-12  v1.0        huangxuefeng  created
- * 2014-01-19  v1.1        huangxuefeng  aggregates render-objects
+ * 2017-08-01  v1.0        huangxuefeng  created
  ******************************************************************************/
+
 #include <stdlib.h>
 #include <sys/time.h>
-
 #include "constant.h"
 #include "autolog.h"
 #include "autolock.h"
 #include "renderer.h"
-
-#define YUV420P_NUM_1080P 1080*1920*3/2
 
 namespace paomiantv {
 

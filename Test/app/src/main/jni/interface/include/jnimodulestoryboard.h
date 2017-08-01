@@ -1,12 +1,12 @@
 /*******************************************************************************
  *        Module: paomiantv
  *          File: 
- * Functionality: jni PMStoryboard module
+ * Functionality: define jni storyboard module
  *       Related: 
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2017 PAOMIANTV, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomaintv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description

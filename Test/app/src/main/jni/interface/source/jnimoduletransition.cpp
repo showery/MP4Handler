@@ -1,13 +1,22 @@
-//
-// Created by John.Huang on 2017/7/31.
-//
+/*******************************************************************************
+ *        Module: paomiantv
+ *          File: jnimoduletransition.cpp
+ * Functionality: transition jni.
+ *       Related: mediasdk
+ *        System: android
+ *      Language: C++
+ *        Author: huangxuefeng
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
+ * -----------------------------------------------------------------------------
+ * Revisions:
+ * Date        Version     Reviser       Description
+ * 2017-07-31  v1.0        huangxuefeng  created
+ ******************************************************************************/
 
 
-#include <constant.h>
-#include <jnicommon.h>
-#include <jnimodulemanager.h>
-#include "autolog.h"
-#include "stdlib.h"
+#include "constant.h"
+#include "jnicommon.h"
+#include "jnimodulemanager.h"
 #include "jnimoduletransition.h"
 
 namespace paomiantv {
@@ -56,7 +65,7 @@ namespace paomiantv {
         if (m_pTransition != NULL) {
             LOGD("Transition instance allocated: %u", sizeof(CTransition));
             // only register valid ones
-            CJNIModuleManger::getInstance()->add(this);
+            CJNIModuleManager::getInstance()->add(this);
         } else {
             LOGE("new Transition failed ,memory is not enough!");
         }
@@ -84,7 +93,7 @@ namespace paomiantv {
         }
 
         // be sure unregister before killing
-        CJNIModuleManger::getInstance()->remove(this);
+        CJNIModuleManager::getInstance()->remove(this);
     }
 
     CJNIModuleTransition *CJNIModuleTransition::CreateJniTransition(JNIEnv *env, jobject jTransition) {
@@ -107,14 +116,14 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jTransition, jfld);
-            if (nValue != 0 && CJNIModuleManger::getInstance()->contains((CJNIModule *) nValue)) {
+            if (nValue != 0 && CJNIModuleManager::getInstance()->contains((CJNIModule *) nValue)) {
                 LOGI("the CJNIModuleTransition is already created");
                 ret = (CJNIModuleTransition *) nValue;
                 break;
             }
 
             CJNIModuleTransition *pNew = new CJNIModuleTransition(env, jTransition, jfld);
-            if (!CJNIModuleManger::getInstance()->contains(pNew)) {
+            if (!CJNIModuleManager::getInstance()->contains(pNew)) {
                 LOGE("create CJNIModuleTransition failed");
                 delete pNew;
                 ret = NULL;
@@ -136,7 +145,7 @@ namespace paomiantv {
     void CJNIModuleTransition::DestroyJniTransition(CJNIModuleTransition *&p) {
         USE_LOG;
 
-        if (p == NULL || !CJNIModuleManger::getInstance()->contains(p)) {
+        if (p == NULL || !CJNIModuleManager::getInstance()->contains(p)) {
             LOGE("invalid parameters");
             return;
         }
@@ -185,7 +194,7 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jTransition, jfld);
-            if (nValue == 0 || !CJNIModuleManger::getInstance()->contains((CJNIModuleTransition *) nValue)) {
+            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleTransition *) nValue)) {
                 //LOGE("get jni Transition from java object failed");
                 //return NULL;
                 LOGI("try to get a new CJNIModuleTransition");
@@ -202,7 +211,7 @@ namespace paomiantv {
 
     bool CJNIModuleTransition::IsValid(CJNIModuleTransition *p) {
         // checks residency validity
-        return CJNIModuleManger::getInstance()->contains(p);
+        return CJNIModuleManager::getInstance()->contains(p);
     }
 
     jboolean

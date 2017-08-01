@@ -1,37 +1,48 @@
-//
-// Created by John.Huang on 2017/8/1.
-//
+/*******************************************************************************
+ *        Module: paomiantv
+ *          File: jnimodulemanager.cpp
+ * Functionality: manage jni objects.
+ *       Related:
+ *        System: android
+ *      Language: C++
+ *        Author: huangxuefeng
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
+ * -----------------------------------------------------------------------------
+ * Revisions:
+ * Date        Version     Reviser       Description
+ * 2017-08-01  v1.0        huangxuefeng  created
+ ******************************************************************************/
 #include "jnimodulemanager.h"
 
 namespace paomiantv {
 
-    CJNIModuleManger::CJNIModuleManger() {
+    CJNIModuleManager::CJNIModuleManager() {
 
     }
 
-    CJNIModuleManger::~CJNIModuleManger() {
+    CJNIModuleManager::~CJNIModuleManager() {
 
     }
 
-    CJNIModuleManger::Garbo CJNIModuleManger::garbo; // 一定要初始化，不然程序结束时不会析构garbo
+    CJNIModuleManager::Garbo CJNIModuleManager::garbo; // 一定要初始化，不然程序结束时不会析构garbo
 
-    CJNIModuleManger *CJNIModuleManger::m_pInstance = NULL;
+    CJNIModuleManager *CJNIModuleManager::m_pInstance = NULL;
 
-    CJNIModuleManger *CJNIModuleManger::getInstance() {
+    CJNIModuleManager *CJNIModuleManager::getInstance() {
         if (m_pInstance == NULL)
-            m_pInstance = new CJNIModuleManger();
+            m_pInstance = new CJNIModuleManager();
         return m_pInstance;
     }
 
-    void CJNIModuleManger::add(void *p) {
+    void CJNIModuleManager::add(void *p) {
         m_Registry.Add(p);
     }
 
-    void CJNIModuleManger::remove(void *p) {
+    void CJNIModuleManager::remove(void *p) {
         m_Registry.Remove(p);
     }
 
-    bool CJNIModuleManger::contains(void *p) {
+    bool CJNIModuleManager::contains(void *p) {
         return m_Registry.Contains(p);
     }
 }

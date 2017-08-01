@@ -1,12 +1,12 @@
 /*******************************************************************************
  *        Module: paomiantv
- *          File: mp4v2helper.cpp
- * Functionality: paomiantv jni stub for PMStoryboard.
- *       Related: mp4v2
+ *          File: jnimodulestoryboard.cpp
+ * Functionality: storyboard jni.
+ *       Related: mediasdk
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
@@ -111,7 +111,7 @@ namespace paomiantv {
             m_pStoryboard->bindEvent(JNIModuleStoryboard_OnFailed, JNIModuleStoryboard_OnSuccess,
                                      JNIModuleStoryboard_OnProgress,
                                      JNIModuleStoryboard_OnAlways, this);
-            CJNIModuleManger::getInstance()->add(this);
+            CJNIModuleManager::getInstance()->add(this);
         } else {
             LOGE("new storyboard failed ,memory is not enough!");
         }
@@ -149,7 +149,7 @@ namespace paomiantv {
         }
         m_sJNIClips.clear();
         // be sure unregister before killing
-        CJNIModuleManger::getInstance()->remove(this);
+        CJNIModuleManager::getInstance()->remove(this);
     }
 
     CJNIModuleStoryboard *
@@ -173,14 +173,14 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jStoryboard, jfld);
-            if (nValue != 0 && CJNIModuleManger::getInstance()->contains((CJNIModule *) nValue)) {
+            if (nValue != 0 && CJNIModuleManager::getInstance()->contains((CJNIModule *) nValue)) {
                 LOGI("the CJNIModuleStoryboard is already created");
                 ret = (CJNIModuleStoryboard *) nValue;
                 break;
             }
 
             CJNIModuleStoryboard *pNew = new CJNIModuleStoryboard(env, jStoryboard, jcls, jfld);
-            if (!CJNIModuleManger::getInstance()->contains(pNew)) {
+            if (!CJNIModuleManager::getInstance()->contains(pNew)) {
                 LOGE("create CJNIModuleStoryboard failed");
                 delete pNew;
                 ret = NULL;
@@ -251,7 +251,7 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jStoryboard, jfld);
-            if (nValue == 0 || !CJNIModuleManger::getInstance()->contains((CJNIModuleStoryboard *) nValue)) {
+            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleStoryboard *) nValue)) {
                 LOGE("get jni storyboard from java object failed");
                 break;
 //            LOGI("try to get a new CJNIModuleStoryboard");
@@ -268,7 +268,7 @@ namespace paomiantv {
 
     bool CJNIModuleStoryboard::IsValid(CJNIModuleStoryboard *p) {
         // checks residency validity
-        return CJNIModuleManger::getInstance()->contains(p);
+        return CJNIModuleManager::getInstance()->contains(p);
     }
 
     jboolean CJNIModuleStoryboard::jni_init(JNIEnv *env, jobject jstoryboard, jstring jdstPath) {

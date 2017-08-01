@@ -1,12 +1,12 @@
 /*******************************************************************************
  *        Module: paomiantv
- *          File: mp4v2helper.cpp
- * Functionality: paomiantv jni stub for mp4v2.
- *       Related: mp4v2
+ *          File: jnimoduleclip.cpp
+ * Functionality: clip jni.
+ *       Related: mediasdk
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
@@ -74,7 +74,7 @@ namespace paomiantv {
         if (m_pClip != NULL) {
             LOGD("Clip instance allocated: %u", sizeof(CClip));
             // only register valid ones
-            CJNIModuleManger::getInstance()->add(this);
+            CJNIModuleManager::getInstance()->add(this);
         } else {
             LOGE("new clip failed ,memory is not enough!");
         }
@@ -125,7 +125,7 @@ namespace paomiantv {
         m_sJNITransitions.clear();
 
         // be sure unregister before killing
-        CJNIModuleManger::getInstance()->remove(this);
+        CJNIModuleManager::getInstance()->remove(this);
     }
 
     CJNIModuleClip *CJNIModuleClip::CreateJniClip(JNIEnv *env, jobject jClip) {
@@ -148,14 +148,14 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jClip, jfld);
-            if (nValue != 0 && CJNIModuleManger::getInstance()->contains((CJNIModule *) nValue)) {
+            if (nValue != 0 && CJNIModuleManager::getInstance()->contains((CJNIModule *) nValue)) {
                 LOGI("the CJNIModuleClip is already created");
                 ret = (CJNIModuleClip *) nValue;
                 break;
             }
 
             CJNIModuleClip *pNew = new CJNIModuleClip(env, jClip, jfld);
-            if (!CJNIModuleManger::getInstance()->contains(pNew)) {
+            if (!CJNIModuleManager::getInstance()->contains(pNew)) {
                 LOGE("create CJNIModuleClip failed");
                 delete pNew;
                 ret = NULL;
@@ -177,7 +177,7 @@ namespace paomiantv {
     void CJNIModuleClip::DestroyJniClip(CJNIModuleClip *&p) {
         USE_LOG;
 
-        if (p == NULL || !CJNIModuleManger::getInstance()->contains(p)) {
+        if (p == NULL || !CJNIModuleManager::getInstance()->contains(p)) {
             LOGE("invalid parameters");
             return;
         }
@@ -226,7 +226,7 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jClip, jfld);
-            if (nValue == 0 || !CJNIModuleManger::getInstance()->contains((CJNIModuleClip *) nValue)) {
+            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleClip *) nValue)) {
                 //LOGE("get jni Clip from java object failed");
                 //return NULL;
                 LOGI("try to get a new CJNIModuleClip");
@@ -243,7 +243,7 @@ namespace paomiantv {
 
     bool CJNIModuleClip::IsValid(CJNIModuleClip *p) {
         // checks residency validity
-        return CJNIModuleManger::getInstance()->contains(p);
+        return CJNIModuleManager::getInstance()->contains(p);
     }
 
     jboolean

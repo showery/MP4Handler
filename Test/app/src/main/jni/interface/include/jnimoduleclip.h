@@ -1,12 +1,12 @@
 /*******************************************************************************
  *        Module: paomiantv
  *          File: 
- * Functionality: jni clip module
+ * Functionality: define jni clip module
  *       Related: 
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2017 PAOMIANTV, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description

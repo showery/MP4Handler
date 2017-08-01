@@ -1,21 +1,21 @@
 /*******************************************************************************
- *        Module: renderbackground
+ *        Module: render
  *          File: renderbackground.cpp
  * Functionality: draw black background onto opengl context.
  *       Related: GLES2
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
- * 2014-01-19  v1.1        huangxuefeng  created
+ * 2017-08-01  v1.0        huangxuefeng  created
  ******************************************************************************/
+
 #include "autolog.h"
 #include "renderbackground.h"
 #include "shader.h"
-#include "version.h"
 
 namespace paomiantv {
 

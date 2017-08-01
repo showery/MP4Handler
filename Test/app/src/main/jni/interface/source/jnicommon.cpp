@@ -1,12 +1,12 @@
 /*******************************************************************************
- *        Module: paomiantv
+ *        Module: interface
  *          File: jnicommon.cpp
  * Functionality: jnicommon function.
- *       Related: interface
+ *       Related:
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description

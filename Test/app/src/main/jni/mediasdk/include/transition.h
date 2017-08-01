@@ -1,3 +1,18 @@
+/*******************************************************************************
+ *        Module: mediasdk
+ *          File:
+ * Functionality: transition entity.
+ *       Related:
+ *        System: android
+ *      Language: C++
+ *        Author: huangxuefeng
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
+ * -----------------------------------------------------------------------------
+ * Revisions:
+ * Date        Version     Reviser       Description
+ * 2017-08-01  v1.0        huangxuefeng  created
+ ******************************************************************************/
+
 #ifndef _PAOMIANTV_TRANSITION_H_
 #define _PAOMIANTV_TRANSITION_H_
 

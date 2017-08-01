@@ -1,16 +1,16 @@
 /*******************************************************************************
- *        Module: paomiantv
+ *        Module: mediasdk
  *          File: 
  * Functionality: audio process
  *       Related: 
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2017 PAOMIANTV, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
- * 2017-07-20  v1.0        huangxuefeng  created
+ * 2017-07-24  v1.0        huangxuefeng  created
  ******************************************************************************/
 #ifndef _PAOMIANTV_ACONTROLLER_H_
 #define _PAOMIANTV_ACONTROLLER_H_

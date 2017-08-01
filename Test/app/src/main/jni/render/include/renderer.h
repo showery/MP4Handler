@@ -1,18 +1,19 @@
 /*******************************************************************************
- *        Module: renderer
- *          File: renderer.h
+ *        Module: render
+ *          File:
  * Functionality: rendering video onto opengl context.
  *       Related: GLES2
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
  * 2013-07-12  v1.0        huangxuefeng  created
  * 2014-01-19  v1.1        huangxuefeng  aggregates render-objects
  ******************************************************************************/
+
 #ifndef _PAOMIANTV_RENDERER_H_
 #define _PAOMIANTV_RENDERER_H_
 

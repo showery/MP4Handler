@@ -1,12 +1,12 @@
 /*******************************************************************************
- *        Module: linearalgebra
- *          File: linearalgebra.h
+ *        Module: render
+ *          File:
  * Functionality: linear algebra
  *       Related:
  *        System: generic
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description

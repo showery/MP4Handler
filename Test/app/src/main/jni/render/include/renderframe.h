@@ -1,12 +1,12 @@
 /*******************************************************************************
- *        Module: renderframe
+ *        Module: render
  *          File: renderframe.h
  * Functionality: rendering an i420 frame onto opengl context.
  *       Related: GLES2
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
- *       Version: V1.0 Copyright(C) 2013 360ANTS, All rights reserved.
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description

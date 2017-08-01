@@ -1,8 +1,8 @@
 /*******************************************************************************
- *        Module: paomiantv
- *          File: mp4v2helper.cpp
- * Functionality: paomiantv jni stub for PMEngine.
- *       Related: mp4v2
+ *        Module: interface
+ *          File: jnimoduleengine.cpp
+ * Functionality: engine jni.
+ *       Related: mediasdk
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng

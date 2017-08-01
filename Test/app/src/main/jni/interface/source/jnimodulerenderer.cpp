@@ -1,8 +1,18 @@
-//
-// Created by John.Huang on 2017/8/1.
-//
+/*******************************************************************************
+ *        Module: paomiantv
+ *          File: jnimodulerenderer.cpp
+ * Functionality: renderer jni.
+ *       Related: render
+ *        System: android
+ *      Language: C++
+ *        Author: huangxuefeng
+ *       Version: V1.0 Copyright(C) 2017 paomiantv, All rights reserved.
+ * -----------------------------------------------------------------------------
+ * Revisions:
+ * Date        Version     Reviser       Description
+ * 2017-08-01  v1.0        huangxuefeng  created
+ ******************************************************************************/
 
-#include "constant.h"
 #include "jnimodulemanager.h"
 #include "jnicommon.h"
 #include "jnimodulerenderer.h"
@@ -79,7 +89,7 @@ namespace paomiantv{
             m_pRenderer->bindEvent(JNIModuleRenderer_OnNewFrame,this);
         }
         // only register valid ones
-        CJNIModuleManger::getInstance()->add(this);
+        CJNIModuleManager::getInstance()->add(this);
     }
 
 // FIXME: when exit the application, it will sometimes prints this error log:
@@ -98,13 +108,13 @@ namespace paomiantv{
         }
 
         // be sure unregister before killing
-        CJNIModuleManger::getInstance()->remove(this);
+        CJNIModuleManager::getInstance()->remove(this);
     }
 
     bool CJNIModuleRenderer::IsValid(CJNIModuleRenderer *p)
     {
         // checks residency validity
-        return CJNIModuleManger::getInstance()->contains(p);
+        return CJNIModuleManager::getInstance()->contains(p);
     }
 
     CJNIModuleRenderer * CJNIModuleRenderer::CreateJniRenderer(JNIEnv *env, jobject jRenderer)
@@ -136,7 +146,7 @@ namespace paomiantv{
             }
 
             jint nValue = env->GetIntField(jRenderer, jfld);
-            if (nValue != 0 && CJNIModuleManger::getInstance()->contains((void*)nValue))
+            if (nValue != 0 && CJNIModuleManager::getInstance()->contains((void*)nValue))
             {
                 LOGI("the CJNIModuleRenderer is already created");
                 ret = (CJNIModuleRenderer*)nValue;
@@ -144,7 +154,7 @@ namespace paomiantv{
             }
 
             CJNIModuleRenderer * pNew = new CJNIModuleRenderer(env, jRenderer, jcls, jfld, jmtd);
-            if (!CJNIModuleManger::getInstance()->contains(pNew))
+            if (!CJNIModuleManager::getInstance()->contains(pNew))
             {
                 LOGE("create CJNIModuleRenderer failed");
                 delete pNew;
@@ -170,7 +180,7 @@ namespace paomiantv{
     {
         USE_LOG;
 
-        if (p == NULL || !CJNIModuleManger::getInstance()->contains(p))
+        if (p == NULL || !CJNIModuleManager::getInstance()->contains(p))
         {
             LOGE("invalid parameters");
             return;
@@ -229,7 +239,7 @@ namespace paomiantv{
 
             jint nValue = env->GetIntField(jRenderer, jfld);
             if (nValue == 0
-                || !CJNIModuleManger::getInstance()->contains((CJNIModuleRenderer*)nValue))
+                || !CJNIModuleManager::getInstance()->contains((CJNIModuleRenderer*)nValue))
             {
                 LOGE("get jni renderer from java object failed");
                 break;
