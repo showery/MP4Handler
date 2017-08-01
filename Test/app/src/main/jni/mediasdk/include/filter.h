@@ -16,12 +16,12 @@ private:
   void parse();
 
 public:
-  BOOL32 init();
+  void init(s8* pchSrc, s64 sllStart, s64 sllDurantion);
 
-  BOOL32 uninit();
+  void uninit();
   void setSrc(s8 *pchSrc);
-  void setStart(s64 ullStart);
-  void setDuration(s64 ullDuration);
+  void setStart(s64 sllStart);
+  void setDuration(s64 sllDuration);
 
   inline s8 *getSrc();
   inline s64 getStart();
@@ -29,9 +29,8 @@ public:
 
 private:
   s8 *m_pchSrcPath;
-  s64 m_ullStart;
-  s64 m_ullDuration;
-  ILock *m_pLock;
+  s64 m_sllStart;
+  s64 m_sllDuration;
 };
 inline s8 *CFilter::getSrc()
 {
@@ -40,14 +39,14 @@ inline s8 *CFilter::getSrc()
 
 inline s64 CFilter::getStart()
 {
-  return m_ullStart;
+  return m_sllStart;
 }
 
 inline s64 CFilter::getDuration()
 {
-  return m_ullDuration;
+  return m_sllDuration;
 }
 
 } // namespace paomiantv
 
-#endif // _PAOMIANTV_MP4CUTTER_H_
+#endif // _PAOMIANTV_FILTER_H_

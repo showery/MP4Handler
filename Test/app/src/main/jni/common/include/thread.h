@@ -2,12 +2,13 @@
 #define _PAOMIANTV_THREAD_H_
 
 #include <pthread.h>
+#include <sys/prctl.h>
 #include "autolog.h"
 
 namespace paomiantv
 {
 
-typedef void *(*ThreadTask)(void *);
+typedef void *(*ThreadTask) (void *);
 
 class CThread
 {
@@ -22,6 +23,14 @@ class CThread
     {
     }
 
+    static void SetName(const s8* pchName){
+#ifndef __ANDROID__
+        prctl(PR_SET_NAME, pchName);
+#else
+        prctl(PR_SET_NAME, (unsigned long)pchName, 0, 0, 0);
+#endif
+    }
+
     BOOL32 start()
     {
         BOOL32 ret = TRUE;
@@ -32,7 +41,7 @@ class CThread
             nErr = pthread_attr_init(&attr);
             if (nErr)
             {
-                LOGE("start failed, init thread attribute failed!");
+                LOGE("start failed, jni_init thread attribute failed!");
                 ret = FALSE;
                 break;
             }
@@ -45,7 +54,7 @@ class CThread
                 break;
             }
 
-            nErr = pthread_create(&m_thread, &attr, (void *(*)(void *))task, data);
+            nErr = pthread_create(&m_thread, &attr, (void *(*)(void *))m_task, m_data);
             if (nErr)
             {
                 LOGE("start failed, create thread failed!");
@@ -61,7 +70,7 @@ class CThread
     void* join()
     {
         void *retv = NULL;
-        int nErr = pthread_join(handle, (void **)&retv);
+        int nErr = pthread_join(m_thread, (void **)&retv);
         if(nErr)
         {
             printf("thread is not started");

@@ -1,79 +1,101 @@
-#ifndef _PAOMIANTV_MP4CUTTER_H_
-#define _PAOMIANTV_MP4CUTTER_H_
+#ifndef _PAOMIANTV_STORYBOARD_H_
+#define _PAOMIANTV_STORYBOARD_H_
+
+class CClip;
 
 #include <jni.h>
-#include <pthread.h>
+#include "thread.h"
 #include "typedef.h"
 #include "autolock.h"
 #include "clip.h"
 
-namespace paomiantv
-{
-/*!
- * \brief    used in Storyboard.
- * \author  huangxuefeng
- * \date    2017-07-21
- */
-typedef struct tagBGMParam
-{
-  //! , zero or positive is acceptable.
-  s64 m_sllStart;
-  //! duration, zero or positive is acceptable.
-  s64 sllDuration;
-  //! source mp4 file path
-  s8 *pchSrcPath;
-  //! constructure
-  tagBGMParam()
-  {
-    memset(this, 0, sizeof(tagBGMParam));
-  }
-} TBGMParam;
+namespace paomiantv {
 
-class CStoryboard
-{
-public:
-  CStoryboard();
-  ~CStoryboard();
+    typedef void ( *FailedCB    )(void *, s32, char *);
 
-  BOOL32 init(s8 *pchDstPath);
+    typedef void ( *SuccessCB    )(void *);
 
-  BOOL32 setBGM(s8 *pchSrcpath, s64 sllStartCutTm, s64 sllDurationCutTm, s64 sllStartTm, s64 sllEndTm);
+    typedef void ( *ProgressCB    )(void *, s32);
 
-  BOOL32 addClip(CClip *pClip);
+    typedef void ( *AlwaysCB    )(void *);
 
-  CClip *removeClip(s32 index);
+    class CStoryboard {
+    public:
+        CStoryboard();
 
-  CClip *getClip(s32 index);
+        ~CStoryboard();
 
-  BOOL32 swapClip(s32 indexA, s32 indexB);
+        BOOL32 init(s8 *pchDstPath);
 
-  BOOL32 process();
+        inline s8 *getDstPath();
 
-  BOOL32 cancel();
+        BOOL32 uninit();
 
-private:
-  void start();
-  void stop();
-  static void *ThreadWrapper(void *pThis);
-  int ThreadEntry();
+        BOOL32 setBGM(s8 *pchSrcpath, s64 sllStartCutTm, s64 sllDurationCutTm, s64 sllStartTm,
+                      s64 sllEndTm);
 
-  //BGM
-  TClipParam *m_ptBGMClipParam;
-  s8 *m_pchSrcBGM;
-  s64 m_sslBGMStartTm;
-  s64 m_sslBGMEndTm;
-  //clips
-  s8 *m_pchDstPath;
-  std::vector<CClip *> m_vClips;
+        BOOL32 addClip(CClip *pClip);
 
-  BOOL32 m_bIsStarted;
-  BOOL32 m_bIsStop;
-  BOOL32 m_bIsProcessing;
-  
-  CThread *m_pThread;
-  ILock *m_pLock;
-};
+        BOOL32 insertClip(s32 index, CClip *pClip);
+
+        CClip *removeClip(s32 index);
+
+        CClip *getClip(s32 index);
+
+        BOOL32 swapClip(s32 indexA, s32 indexB);
+
+        s32 getClipCount();
+
+        void bindEvent(FailedCB cbOnFailed, SuccessCB cbOnSuccess, ProgressCB cbOnProgress,
+                       AlwaysCB cbOnAlways, void *cdDelegate);
+
+        void resume();
+
+        void pause();
+
+        void process();
+
+        void cancel();
+
+    private:
+        void prepare();
+
+        void stop();
+
+        void handle();
+
+        static void *ThreadWrapper(void *pThis);
+
+        void ThreadEntry();
+
+        //BGM
+        TClipParam *m_ptBGMClipParam;
+        s8 *m_pchSrcBGM;
+        s64 m_sllBGMStartTm;
+        s64 m_sllBGMEndTm;
+        //clips
+        s8 *m_pchDstPath;
+        std::vector<CClip *> m_vClips;
+
+        BOOL32 m_bIsStarted;
+        BOOL32 m_bIsStop;
+        BOOL32 m_bNewTask;
+        BOOL32 m_bIsPaused;
+
+        CThread *m_pThread;
+        ILock *m_pLock;
+
+        FailedCB m_cbOnFailed;
+        SuccessCB m_cbOnSuccess;
+        ProgressCB m_cbOnProgress;
+        AlwaysCB m_cbOnAlways;
+        void *m_cbDelegate;
+    };
+
+    inline s8 *CStoryboard::getDstPath() {
+        return m_pchDstPath;
+    }
 
 } // namespace paomiantv
 
-#endif // _PAOMIANTV_MP4CUTTER_H_
+#endif // _PAOMIANTV_STORYBOARD_H_

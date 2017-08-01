@@ -16,6 +16,7 @@
 #define _PAOMIANTV_JNIMODULEENGINE_H_
 
 #include "jnimodule.h"
+#include "./mp4v2/mp4v2.h"
 
 namespace paomiantv
 {
@@ -28,7 +29,7 @@ public:
   static TJavaClazzParam *GetJavaClazzParam();
   static void init(JNIEnv *env, jobject jengine);
   static void uninit(JNIEnv *env, jobject jengine);
-  static void log_cb(s32 loglevel, const s8 *fmt, va_list ap);
+  static void log_cb(MP4LogLevel loglevel, const s8 *fmt, va_list ap);
 };
 }
 

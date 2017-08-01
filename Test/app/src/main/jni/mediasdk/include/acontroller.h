@@ -19,6 +19,7 @@
 #include "autolock.h"
 #include "autolog.h"
 #include "stdlib.h"
+#include "transparam.h"
 
 namespace paomiantv
 {

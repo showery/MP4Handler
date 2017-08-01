@@ -15,7 +15,8 @@
 #ifndef _PAOMIANTV_JNIMODULESTORYBOARD_H_
 #define _PAOMIANTV_JNIMODULESTORYBOARD_H_
 
-#include "jnimodule.h"
+#include "jnimoduleclip.h"
+#include "storyboard.h"
 
 #define ERROR_SOURCE 10000
 #define ERROR_SOURCE_DIST "Soure file is null or not existed!"
@@ -24,65 +25,101 @@
 #define STORYBOARD_METHOD_FAILED_NAME "fireOnFailed"
 #define STORYBOARD_METHOD_PROGRESS_NAME "fireOnProgress"
 #define STORYBOARD_METHOD_SUCCESS_NAME "fireOnSuccess"
+#define STORYBOARD_METHOD_ALWAYS_NAME "fireOnAlways"
 //method signiture
 #define STORYBOARD_METHOD_FAILED_SIG "(ILjava/lang/String;)V"
 #define STORYBOARD_METHOD_PROGRESS_SIG "(I)V"
 #define STORYBOARD_METHOD_SUCCESS_SIG "(Ljava/lang/String;)V"
+#define STORYBOARD_METHOD_ALWAYS_SIG "()V"
 
 //field name
 #define STORYBOARD_FIELD_NATIVE_ADDRESS_NAME "mNativeStoryboardAddress"
 //field signiture
 #define STORYBOARD_FIELD_NATIVE_ADDRESS_SIG "I"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-typedef struct tagJAVAMethod
-{
-  const s8 *m_pchName;
-  const s8 *m_pchSigniture;
-} TJavaMemeber;
+    class CJNIModuleStoryboard : public CJNIModule {
+    private:
+        CStoryboard *m_pStoryboard;
+        jmethodID m_ajmtd[4];
+        std::set<CJNIModuleClip *> m_sJNIClips;
 
-class CJNIModuleStoryboard : public CJNIModule
-{
-private:
-  CStoryboard *m_pStoryboard;
-  jmethodID m_ajmtd[3];
+    private:
+        CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard, jclass jcls, jfieldID jfld);
 
-private:
-  CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard);
-  virtual ~CJNIModuleStoryboard();
-  static CJNIModuleStoryboard *CreateJniStoryboard(JNIEnv *env, jobject jStoryboard);
+        virtual ~CJNIModuleStoryboard();
 
-  static jboolean init(JNIEnv *env, jobject jstoryboard, jstring jdstPath);
+        friend void JNIModuleStoryboard_OnFailed(void *delegate,s32 nErr, s8* pchDescription);
 
-  static jboolean uninit(JNIEnv *env, jobject jstoryboard);
+        friend void JNIModuleStoryboard_OnSuccess(void *delegate);
 
-  static jboolean setBGM(JNIEnv *env, jobject jstoryboard, jstring jsrcpath, jlong jstartCutTm, jlong jdurationCutTm, jlong jstartTm, jlong jendTm);
+        friend void JNIModuleStoryboard_OnProgress(void *delegate, s32 nProgress);
 
-  static jboolean addClip(JNIEnv *env, jobject jstoryboard, jobject jclip);
+        friend void JNIModuleStoryboard_OnAlways(void *delegate);
 
-  static jobject removeClip(JNIEnv *env, jobject jstoryboard, jint jindex);
+        static CJNIModuleStoryboard *CreateJniStoryboard(JNIEnv *env, jobject jStoryboard);
 
-  static jobject getClip(JNIEnv *env, jobject jstoryboard, jint jindex);
+        static CJNIModuleStoryboard *GetJniStoryboard(JNIEnv *env, jobject jStoryboard);
 
-  static jboolean swapClip(JNIEnv *env, jobject jstoryboard, jint jindexA, jint jindexB);
+        static void DestroyJniStoryboard(CJNIModuleStoryboard *&p);
 
-  static jboolean procsss(JNIEnv *env, jobject jstoryboard);
+        static bool IsValid(CJNIModuleStoryboard *p);
 
-  static jboolean cancel(JNIEnv *env, jobject jstoryboard);
 
-public:
-  inline CStoryboard *getCStoryboard();
-  static CJNIModuleStoryboard *GetJniStoryboard(JNIEnv *env, jobject jStoryboard);
-  static void DestroyJniStoryboard(CJNIModuleStoryboard *&p);
-  static bool IsValid(CJNIModuleStoryboard *p);
-  static TJavaClazzParam *GetJavaClazzParam();
-};
-inline CStoryboard *CJNIModuleStoryboard::getCStoryboard()
-{
-  return m_pStoryboard;
-}
+        static jboolean jni_init(JNIEnv *env, jobject jstoryboard, jstring jdstPath);
+
+        static jboolean jni_uninit(JNIEnv *env, jobject jstoryboard);
+
+        static jboolean
+        jni_setBGM(JNIEnv *env, jobject jstoryboard, jstring jsrcpath, jlong jstartCutTm,
+                   jlong jdurationCutTm, jlong jstartTm, jlong jendTm);
+
+        static jboolean jni_addClip(JNIEnv *env, jobject jstoryboard, jobject jclip);
+
+        static jboolean
+        jni_insertClip(JNIEnv *env, jobject jstoryboard, jint jindex, jobject jclip);
+
+        static jobject jni_removeClip(JNIEnv *env, jobject jstoryboard, jint jindex);
+
+        static jobject jni_getClip(JNIEnv *env, jobject jstoryboard, jint jindex);
+
+        static jboolean jni_swapClip(JNIEnv *env, jobject jstoryboard, jint jindexA, jint jindexB);
+
+        static jint jni_getClipCount(JNIEnv *env, jobject jstoryboard);
+
+        static jboolean jni_procsss(JNIEnv *env, jobject jstoryboard);
+
+        static jboolean jni_cancel(JNIEnv *env, jobject jstoryboard);
+
+    public:
+
+
+        static TJavaClazzParam *GetJavaClazzParam();
+
+        void successCallback();
+
+        void progressCallback(s32 nProgress);
+
+        void failedCallback(s32 nErr, s8 *pchDescription);
+
+        void alwaysCallback();
+
+
+        BOOL32 addClip(CJNIModuleClip *clip);
+
+        BOOL32 insertClip(s32 nIndex, CJNIModuleClip *clip);
+
+        CJNIModuleClip * removeClip(s32 nIndex);
+
+        CJNIModuleClip *getClip(s32 jindex);
+
+        inline CStoryboard *getCStoryboard();
+    };
+
+    inline CStoryboard *CJNIModuleStoryboard::getCStoryboard() {
+        return m_pStoryboard;
+    }
 }
 
 #endif /* _PAOMIANTV_JNIMODULESTORYBOARD_H_ */

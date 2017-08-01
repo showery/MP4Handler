@@ -44,35 +44,11 @@ public class PMFilter {
         _setDuration(duration);
     }
 
-    public String getFilter(int index) {
-        return _getFilter(index);
+    public int getmNativeFilterAddress(){
+        return this.mNativeFilterAddress;
     }
 
-    public String getTransition(int index) {
-        return _getTransition(index);
-    }
-
-    public void addFilter(String filter) {
-        _addFilter(filter);
-    }
-
-    public void removeFilter(String filter) {
-        _removeFilter(filter);
-    }
-
-    public void addTransition(String transition) {
-        _addTransition(transition);
-    }
-
-    public void removeTransition(String transition) {
-        _removeTransition(transition);
-    }
-
-    public int getNativeClipAddress(){
-        return this.mNativeClipAddress;
-    }
-
-    private native boolean _init(String mSrc, long mStart, long mDuration);
+    private native boolean _init(String src, long start, long duration);
     private native boolean _uninit();
 
     private native String _getSrc();
@@ -81,30 +57,13 @@ public class PMFilter {
 
     private native long _getStart();
 
-    private native void _setStart(long mStart);
+    private native void _setStart(long start);
 
     private native long _getDuration();
 
-    private native void _setDuration(long mDuration);
+    private native void _setDuration(long duration);
 
-
-    private native String _getFilter(int index);
-
-    private native boolean _addFilter(String filter);
-
-    private native boolean _removeFilter(String filter);
-
-    private native int _getFilterCount();
-
-
-    private native boolean _addTransition(String transition);
-
-    private native String _getTransition(int index);
-
-    private native boolean _removeTransition(String transition);
-
-    private native int _getTransitionCount();
 
     // member accessed by native methods.
-    private int mNativeClipAddress;
+    private int mNativeFilterAddress;
 }

@@ -13,8 +13,9 @@
  * 2017-07-20  v1.0        huangxuefeng  created
  ******************************************************************************/
 
+#include <jniloader.h>
 #include "paomiantv.h"
-#include "jnimodulemanager.h"
+#include "jniloader.h"
 jint JNI_OnLoad(JavaVM * vm, void * reserved)
 {
     LOGI("version: %u", LIB_PAOMIANTV_VERSION);
@@ -24,7 +25,7 @@ jint JNI_OnLoad(JavaVM * vm, void * reserved)
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
         goto bail;
     }
-    paomiantv::CModuleManger::getInstance()->loadModules(env);
+    paomiantv::CJNILoader::getInstance()->loadModules(env);
     result = JNI_VERSION_1_4;
 bail:
     return result;

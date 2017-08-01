@@ -25,46 +25,20 @@
 #include "jnimodulestoryboard.h"
 #include "jnimoduleclip.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CMP4Parser
-{
-  private:
-    CMP4Parser(){};
-    CMP4Parser(const CMP4Parser &);
+    class CMP4Parser {
+    public:
+        CMP4Parser() {};
 
-    CMP4Parser &operator=(const CMP4Parser &);
-    static CMP4Parser *m_pInstance;
+        CMP4Parser(const CMP4Parser &);
 
-    class Garbo
-    {
-      public:
-        ~Garbo()
-        {
-            if (CMP4Parser::m_pInstance)
-            {
-                delete CMP4Parser::m_pInstance;
-            }
-        }
+        CMP4Parser &operator=(const CMP4Parser &);
+
+    public:
+
+        BOOL32 loadMp4(s8 *pchPath);
     };
-    static Garbo garbo;
-
-  public:
-    static CJNIModuleManger *getInstance();
-    BOOL32 loadMp4(s8 *pchPath);
-};
-
-CMP4Parser::Garbo CMP4Parser::garbo; // 一定要初始化，不然程序结束时不会析构garbo
-
-CMP4Parser *CMP4Parser::m_pInstance = NULL;
-
-CMP4Parser *CMP4Parser::getInstance()
-{
-    if (m_pInstance == NULL)
-        m_pInstance = new CMP4Parser();
-    return m_pInstance;
-}
 }
 
 #endif /* _PAOMIANTV_MP4PARSE_H_ */

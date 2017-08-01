@@ -42,7 +42,7 @@ public class PMTransition {
         return this.mNativeTransitionAddress;
     }
 
-    private native boolean _init(String mSrc, long mStart, long mDuration);
+    private native boolean _init(String src, long start, long duration);
     private native boolean _uninit();
 
     private native String _getSrc();
@@ -51,11 +51,11 @@ public class PMTransition {
 
     private native long _getStart();
 
-    private native void _setStart(long mStart);
+    private native void _setStart(long start);
 
     private native long _getDuration();
 
-    private native void _setDuration(long mDuration);
+    private native void _setDuration(long duration);
 
     // member accessed by native methods.
     private int mNativeTransitionAddress;

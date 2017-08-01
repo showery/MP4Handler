@@ -2,6 +2,8 @@
 #include "autolog.h"
 #include "autofile.h"
 #include "autolock.h"
+#include "constant.h"
+#include "transition.h"
 
 namespace paomiantv
 {
@@ -10,48 +12,42 @@ CTransition::CTransition()
 {
     USE_LOG;
     m_pchSrcPath = (s8 *)malloc(MAX_LEN_FILE_PATH);
-    memset(m_pchSrcPath, 0, MAX_LEN_FILE_PATH);
-    m_pLock = new ILock;
 }
 
 CTransition::~CTransition()
 {
     USE_LOG;
-    delete m_pLock;
     free(m_pchSrcPath);
 }
-BOOL32 CTransition::init()
+void CTransition::init(s8* pchSrc, s64 sllStart, s64 sllDuration)
 {
+    strncpy(m_pchSrcPath,pchSrc,MAX_LEN_FILE_PATH);
+    m_sllStart = sllStart;
+    m_sllDuration= sllDuration;
 }
 
-BOOL32 CTransition::uninit()
+void CTransition::uninit()
 {
 }
 
 void CTransition::setSrc(s8 *pchSrc)
 {
-    BEGIN_AUTOLOCK(m_pLock);
-    strncpy(m_pchSrcPath, pchSrc, sizeof(m_pchSrcPath));
-    parse();
-    END_AUTOLOCK;
+    strncpy(m_pchSrcPath, pchSrc, MAX_LEN_FILE_PATH);
 }
 
-void CTransition::setStart(s64 ullStart)
+void CTransition::setStart(s64 sllStart)
 {
-    BEGIN_AUTOLOCK(m_pLock);
-    m_ullStart = ullStart;
-    END_AUTOLOCK;
+    m_sllStart = sllStart;
 }
 
-void CTransition::setDuration(s64 ullDuration)
+void CTransition::setDuration(s64 sllDuration)
 {
-    BEGIN_AUTOLOCK(m_pLock);
-    m_ullDuration = ullDuration;
-    END_AUTOLOCK;
+    m_sllDuration = sllDuration;
 }
 
 void CTransition::parse()
 {
+    
 }
 
 } // namespace paomiantv

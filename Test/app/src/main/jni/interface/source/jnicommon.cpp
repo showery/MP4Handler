@@ -249,7 +249,7 @@ jstring stringToJString(JNIEnv *env, s8 *pchPat)
     env->PushLocalFrame(10);
     int nPatLen = strlen(pchPat);
     jclass jclass_String = env->FindClass("java/lang/String");
-    jmethodID jinit_method = env->GetMethodID(jclass_String, "<init>", "([BLjava/lang/String;)V");
+    jmethodID jinit_method = env->GetMethodID(jclass_String, "<jni_init>", "([BLjava/lang/String;)V");
     jbyteArray jbytes = env->NewByteArray(nPatLen);
     env->SetByteArrayRegion(jbytes, 0, nPatLen, (jbyte *)pchPat);
     jstring jencoding = env->NewStringUTF("UTF-8");

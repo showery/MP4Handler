@@ -263,7 +263,7 @@ namespace itmf {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// must come after static data init
+// must come after static data jni_init
 const EnumBasicType enumBasicType;
 const EnumGenreType enumGenreType;
 const EnumStikType enumStikType;
@@ -279,7 +279,7 @@ namespace {
         string    data;
     };
 
-    // POD static init does not need singletons
+    // POD static jni_init does not need singletons
     static ImageHeader IMAGE_HEADERS[] = {
         { BT_BMP,  "\x42\x4d" },
         { BT_GIF,  "GIF87a" },

@@ -104,8 +104,7 @@ LOCAL_SRC_FILES:= \
     libutil/crc.cpp \
     libutil/other.cpp
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
-    $(LOCAL_PATH)/common \
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_LDLIBS := -llog
 #

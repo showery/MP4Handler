@@ -4,7 +4,9 @@ LOCAL_MODULE:= mediasdk
 MEDIASDK_SRC_DIR    := source
 MEDIASDK_INC_DIR    := include
 COMM_DIR    		 := ../common/include
+MP4V2_DIR    	 	 := ../mp4v2/include
 INC_PATH    	 := $(MEDIASDK_INC_DIR)\
+			$(MP4V2_DIR)\
 			$(COMM_DIR)
 
 MEDIASDK_SRC_CFILES		:= $(wildcard $(LOCAL_PATH)/$(MEDIASDK_SRC_DIR)/*.c)
@@ -17,7 +19,7 @@ LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(MEDIASDK_SRC_CFILES))\
 		$(subst $(LOCAL_PATH)/,,$(MEDIASDK_SRC_CPPFILES))\
 		$(subst $(LOCAL_PATH)/,,$(MEDIASDK_SRC_CCFILES))
 		
-LOCAL_CFLAGS += -D_ANDROID_                               
+LOCAL_CFLAGS += -D__ANDROID__
 LOCAL_CFLAGS += -fpic
 LOCAL_CFLAGS += -fexceptions
 

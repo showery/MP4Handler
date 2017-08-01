@@ -14,7 +14,6 @@
  ******************************************************************************/
 #include "jnimoduleengine.h"
 #include "autolog.h"
-#include "jnicommon.h"
 #include "stdlib.h"
 
 namespace paomiantv

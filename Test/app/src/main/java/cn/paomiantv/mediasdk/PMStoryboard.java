@@ -12,7 +12,7 @@ public class PMStoryboard {
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private PMStoryboard.ProcessListener mListener = null;
+    private ProcessListener mListener = null;
 
     public PMStoryboard(String dst) {
         _init(dst);
@@ -32,19 +32,23 @@ public class PMStoryboard {
 
     }
 
+    public boolean insertClip(int position,PMClip clip) {
+        return _intertClip(position,clip);
 
+    }
     public PMClip getClip(int index) {
         return _getClip(index);
     }
 
-    public boolean removeClip(int index) {
-        PMClip clip = _removeClip(index);
-        clip.destory();
-        return true;
+    public PMClip removeClip(int index) {
+        return _removeClip(index);
     }
 
     public boolean swapClip(int a, int b) {
         return _swapClip(a, b);
+    }
+    public int getClipCount() {
+        return _getClipCount();
     }
 
     public boolean process() {
@@ -113,6 +117,23 @@ public class PMStoryboard {
         }
     }
 
+    protected void fireOnAlways() {
+        try {
+            if (mListener != null) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //已在主线程中，可以更新UI
+                        mListener.onAlways(PMStoryboard.this);
+                    }
+                });
+
+            }
+        } catch (Exception ex) {
+            // Log.e(TAG, "fire fireOnMessage failed: " + ex.getMessage());
+        }
+    }
+
     private native boolean _init(String dstPath);
 
     private native boolean _uninit();
@@ -121,11 +142,15 @@ public class PMStoryboard {
 
     private native boolean _addClip(PMClip clip);
 
-    private native PMClip _removeClip(int index);
+    private native boolean _intertClip(int position,PMClip clip);
 
-    private native PMClip _getClip(int index);
+    private native PMClip _removeClip(int position);
 
-    private native boolean _swapClip(int a, int b);
+    private native PMClip _getClip(int position);
+
+    private native boolean _swapClip(int positionA, int positionB);
+
+    private native int _getClipCount();
 
     private native boolean _procsss();
 

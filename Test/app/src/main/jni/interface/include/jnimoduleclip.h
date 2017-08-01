@@ -12,73 +12,97 @@
  * Date        Version     Reviser       Description
  * 2017-07-20  v1.0        huangxuefeng  created
  ******************************************************************************/
-#ifndef _PAOMIANTV_MP4V2MODULE_H_
-#define _PAOMIANTV_MP4V2MODULE_H_
+#ifndef _PAOMIANTV_JNIMODULECLIP_H
+#define _PAOMIANTV_JNIMODULECLIP_H
 
-#include "jnimodule.h"
-
+#include <set>
+#include "clip.h"
+#include "jnimodulefilter.h"
+#include "jnimoduletransition.h"
 //field name
 #define CLIP_FIELD_NATIVE_ADDRESS_NAME "mNativeClipAddress"
 //field signiture
 #define CLIP_FIELD_NATIVE_ADDRESS_SIG "I"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CJNIModuleClip : public CJNIModule
-{
-private:
-  CClip *m_pClip;
+    class CJNIModuleClip : public CJNIModule {
+    private:
+        CClip *m_pClip;
+        std::set<CJNIModuleFilter *> m_sJNIFilters;
+        std::set<CJNIModuleTransition *> m_sJNITransitions;
 
-public:
-  static TJavaClazzParam *GetJavaClazzParam();
-  static CJNIModuleClip *GetJniClip(JNIEnv *env, jobject jClip);
-  static CJNIModuleClip *ExistJniClip(JNIEnv *env, jobject jClip);
-  static void DestroyJniClip(CJNIModuleClip *&p);
-  static bool IsValid(CJNIModuleClip *p);
-  inline CClip *getCClip();
+    public:
+        static TJavaClazzParam *GetJavaClazzParam();
 
-private:
-  CJNIModuleClip();
-  virtual ~CJNIModuleClip();
-  static CJNIModuleClip *CreateJniClip(JNIEnv *env, jobject jClip);
+        static CJNIModuleClip *CreateJniClip(JNIEnv *env, jobject jClip);
 
-  static jboolean init(JNIEnv *env, jobject jclip, jstring jsrc, jlong jstart, jlong jduration);
+        static CJNIModuleClip *GetJniClip(JNIEnv *env, jobject jClip);
 
-  static jboolean uninit(JNIEnv *env, jobject jclip);
+        static void DestroyJniClip(CJNIModuleClip *&p);
 
-  static jstring getSrc(JNIEnv *env, jobject jclip);
+    private:
+        CJNIModuleClip(JNIEnv *env, jobject jClip, jfieldID jfld);
 
-  static void setSrc(JNIEnv *env, jobject jclip, jstring jsrc);
+        virtual ~CJNIModuleClip();
 
-  static jlong getStart(JNIEnv *env, jobject jclip);
 
-  static void setStart(JNIEnv *env, jobject jclip, jlong jstart);
+        static bool IsValid(CJNIModuleClip *p);
 
-  static jlong getDuration(JNIEnv *env, jobject jclip);
 
-  static void setDuration(JNIEnv *env, jobject jclip, jlong jduration);
+        static jboolean
+        jni_init(JNIEnv *env, jobject jclip, jstring jsrc, jlong jstart, jlong jduration);
 
-  static jstring getFilter(JNIEnv *env, jobject jclip, jint jindex);
+        static jboolean jni_uninit(JNIEnv *env, jobject jclip);
 
-  static jboolean addFilter(JNIEnv *env, jobject jclip, jstring jfilter);
+        static jstring jni_getSrc(JNIEnv *env, jobject jclip);
 
-  static jboolean removeFilter(JNIEnv *env, jobject jclip, jstring jfilter);
+        static void jni_setSrc(JNIEnv *env, jobject jclip, jstring jsrc);
 
-  static jint getFilterCount(JNIEnv *env, jobject jclip);
+        static jlong jni_getStart(JNIEnv *env, jobject jclip);
 
-  static jboolean addTransition(JNIEnv *env, jobject jclip, jstring jtransition);
+        static void jni_setStart(JNIEnv *env, jobject jclip, jlong jstart);
 
-  static jstring getTransition(JNIEnv *env, jobject jclip, jint jindex);
+        static jlong jni_getDuration(JNIEnv *env, jobject jclip);
 
-  static jboolean removeTransition(JNIEnv *env, jobject jclip, jstring);
+        static void jni_setDuration(JNIEnv *env, jobject jclip, jlong jduration);
 
-  static jint getTransitionCount(JNIEnv *env, jobject jclip);
-};
-inline CClip *CJNIModuleClip::getCClip()
-{
-  return m_pClip;
+        static jobject jni_getFilter(JNIEnv *env, jobject jclip, jint jindex);
+
+        static jboolean jni_addFilter(JNIEnv *env, jobject jclip, jobject jfilter);
+
+        static jobject jni_removeFilter(JNIEnv *env, jobject jclip, jint jposition);
+
+        static jint jni_getFilterCount(JNIEnv *env, jobject jclip);
+
+        static jboolean jni_addTransition(JNIEnv *env, jobject jclip, jobject jposition);
+
+        static jobject jni_getTransition(JNIEnv *env, jobject jclip, jint jindex);
+
+        static jobject jni_removeTransition(JNIEnv *env, jobject jclip, jint jposition);
+
+        static jint jni_getTransitionCount(JNIEnv *env, jobject jclip);
+
+    public:
+        BOOL32 addFilter(CJNIModuleFilter *filter);
+
+        CJNIModuleFilter *removeFilter(s32 nIndex);
+
+        CJNIModuleFilter *getFilter(s32 position);
+
+        BOOL32 addTransition(CJNIModuleTransition *transition);
+
+        CJNIModuleTransition *removeTransition(s32 nIndex);
+
+        CJNIModuleTransition *getTransition(s32 position);
+
+
+        inline CClip *getCClip();
+    };
+
+    inline CClip *CJNIModuleClip::getCClip() {
+        return m_pClip;
+    }
 }
-}
 
-#endif /* _PAOMIANTV_MP4V2MODULE_H_ */
+#endif /* _PAOMIANTV_JNIMODULECLIP_H */
