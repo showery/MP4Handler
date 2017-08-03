@@ -1,8 +1,8 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE:= mediasdk
-MEDIASDK_SRC_DIR    := source source/module/source
-MEDIASDK_INC_DIR    := include source/module/include
+MEDIASDK_SRC_DIR    := source module/source
+MEDIASDK_INC_DIR    := include module/include
 COMM_DIR    		 := ../common/include
 RENDER_DIR    	     := ../render/include
 MP4V2_DIR    	 	 := ../mp4v2/include
