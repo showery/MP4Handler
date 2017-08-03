@@ -45,19 +45,7 @@ namespace paomiantv {
         jmethodID m_ajmtd[4];
         std::set<CJNIModuleClip *> m_sJNIClips;
 
-    private:
-        CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard, jclass jcls, jfieldID jfld);
-
-        virtual ~CJNIModuleStoryboard();
-
-        friend void JNIModuleStoryboard_OnFailed(void *delegate,s32 nErr, s8* pchDescription);
-
-        friend void JNIModuleStoryboard_OnSuccess(void *delegate);
-
-        friend void JNIModuleStoryboard_OnProgress(void *delegate, s32 nProgress);
-
-        friend void JNIModuleStoryboard_OnAlways(void *delegate);
-
+    public:
         static CJNIModuleStoryboard *CreateJniStoryboard(JNIEnv *env, jobject jStoryboard);
 
         static CJNIModuleStoryboard *GetJniStoryboard(JNIEnv *env, jobject jStoryboard);
@@ -65,6 +53,19 @@ namespace paomiantv {
         static void DestroyJniStoryboard(CJNIModuleStoryboard *&p);
 
         static bool IsValid(CJNIModuleStoryboard *p);
+
+    private:
+        CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard, jclass jcls, jfieldID jfld);
+
+        virtual ~CJNIModuleStoryboard();
+
+        friend void JNIModuleStoryboard_OnFailed(void *delegate, s32 nErr, s8 *pchDescription);
+
+        friend void JNIModuleStoryboard_OnSuccess(void *delegate);
+
+        friend void JNIModuleStoryboard_OnProgress(void *delegate, s32 nProgress);
+
+        friend void JNIModuleStoryboard_OnAlways(void *delegate);
 
 
         static jboolean jni_init(JNIEnv *env, jobject jstoryboard, jstring jdstPath);
@@ -88,9 +89,17 @@ namespace paomiantv {
 
         static jint jni_getClipCount(JNIEnv *env, jobject jstoryboard);
 
-        static jboolean jni_procsss(JNIEnv *env, jobject jstoryboard);
+        static jboolean jni_attachRenderer(JNIEnv *env, jobject jstoryboard, jobject jrenderer);
 
-        static jboolean jni_cancel(JNIEnv *env, jobject jstoryboard);
+        static void jni_detachRenderer(JNIEnv *env, jobject jstoryboard);
+
+        BOOL32 addClip(CJNIModuleClip *clip);
+
+        BOOL32 insertClip(s32 nIndex, CJNIModuleClip *clip);
+
+        CJNIModuleClip *removeClip(s32 nIndex);
+
+        CJNIModuleClip *getClip(s32 jindex);
 
     public:
 
@@ -106,13 +115,7 @@ namespace paomiantv {
         void alwaysCallback();
 
 
-        BOOL32 addClip(CJNIModuleClip *clip);
 
-        BOOL32 insertClip(s32 nIndex, CJNIModuleClip *clip);
-
-        CJNIModuleClip * removeClip(s32 nIndex);
-
-        CJNIModuleClip *getClip(s32 jindex);
 
         inline CStoryboard *getCStoryboard();
     };

@@ -17,21 +17,65 @@
 #define _PAOMIANTV_JNIMODULEENGINE_H_
 
 #include "jnimodule.h"
-#include "./mp4v2/mp4v2.h"
+#include "engine.h"
 
-namespace paomiantv
-{
+//field name
+#define ENGINE_FIELD_NATIVE_ADDRESS_NAME "mNativeEngineAddress"
+//field signiture
+#define ENGINE_FIELD_NATIVE_ADDRESS_SIG "I"
 
-class CJNIModuleEngine : public CJNIModule
-{
-public:
-  CJNIModuleEngine();
-  virtual ~CJNIModuleEngine();
-  static TJavaClazzParam *GetJavaClazzParam();
-  static void init(JNIEnv *env, jobject jengine);
-  static void uninit(JNIEnv *env, jobject jengine);
-  static void log_cb(MP4LogLevel loglevel, const s8 *fmt, va_list ap);
-};
+namespace paomiantv {
+
+    class CJNIModuleEngine : public CJNIModule {
+    private:
+        CEngine *m_pEngine;
+    public:
+
+        static TJavaClazzParam *GetJavaClazzParam();
+
+        static CJNIModuleEngine *CreateJniEngine(JNIEnv *env, jobject jengine);
+
+        static CJNIModuleEngine *GetJniEngine(JNIEnv *env, jobject jengine);
+
+        static void DestroyJniEngine(CJNIModuleEngine *&p);
+
+        static bool IsValid(CJNIModuleEngine *p);
+
+    private:
+
+        CJNIModuleEngine(JNIEnv *env, jobject jEngine, jfieldID jfld);
+
+        virtual ~CJNIModuleEngine();
+
+        static jboolean jni_init(JNIEnv *env, jobject jengine);
+
+        static void jni_uninit(JNIEnv *env, jobject jengine);
+
+        static void jni_startPreview(JNIEnv *env, jobject jengine, jobject jstoryboard);
+
+        static void jni_pausePreview(JNIEnv *env, jobject jengine);
+
+        static void jni_resumePreview(JNIEnv *env, jobject jengine);
+
+        static void jni_stopPreview(JNIEnv *env, jobject jengine);
+
+        static void jni_progress(JNIEnv *env, jobject jengine, jobject jstoryboard);
+
+        static void jni_pause(JNIEnv *env, jobject jengine);
+
+        static void jni_resume(JNIEnv *env, jobject jengine);
+
+        static void jni_cancel(JNIEnv *env, jobject jengine);
+
+    public:
+        inline CEngine *getEngine();
+
+
+    };
+
+    inline CEngine *CJNIModuleEngine::getEngine() {
+        return m_pEngine;
+    }
 }
 
 #endif /* _PAOMIANTV_JNIMODULEENGINE_H_ */

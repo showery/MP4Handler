@@ -14,10 +14,30 @@
  ******************************************************************************/
 #include "vcontroller.h"
 
-namespace paomiantv
-{
-    BOOL32 CVController::process(u8 *pbyIn, u8 *pbyOut, TVTransParam *ptVTransParam)
-    {
+namespace paomiantv {
+
+    CVController::Garbo CVController::garbo; // 一定要初始化，不然程序结束时不会析构garbo
+
+    CVController *CVController::m_pInstance = NULL;
+
+    CVController *CVController::getInstance() {
+        if (m_pInstance == NULL)
+            m_pInstance = new CVController();
+        return m_pInstance;
+    }
+
+    CVController::CVController(){
+
+    }
+
+    CVController::~CVController() {
+    }
+
+    BOOL32 CVController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {
         return TRUE;
+    }
+
+    void CVController::handle(CStoryboard *pStoryboard) {
+
     }
 }

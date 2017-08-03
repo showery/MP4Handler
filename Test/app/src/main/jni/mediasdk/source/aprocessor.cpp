@@ -1,8 +1,8 @@
 /*******************************************************************************
- *        Module: mediasdk
- *          File: mp4parse.cpp
- * Functionality: parse mp4 file.
- *       Related: mp4v2
+ *        Module: paomiantv
+ *          File: aprocessor.cpp
+ * Functionality: handle video data.
+ *       Related:
  *        System: android
  *      Language: C++
  *        Author: huangxuefeng
@@ -10,5 +10,7 @@
  * -----------------------------------------------------------------------------
  * Revisions:
  * Date        Version     Reviser       Description
- * 2017-07-20  v1.0        huangxuefeng  created
+ * 2017-08-03  v1.0        huangxuefeng  created
  ******************************************************************************/
+
+#include "aprocessor.h"

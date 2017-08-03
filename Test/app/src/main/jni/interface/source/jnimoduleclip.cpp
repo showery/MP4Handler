@@ -99,6 +99,7 @@ namespace paomiantv {
             env->DeleteGlobalRef(m_jObject);
             m_jObject = NULL;
             m_jfldNativeAddr = NULL;
+            m_jvm = NULL;
         }
 
         std::set<CJNIModuleFilter *>::iterator iterFilter = m_sJNIFilters.begin();
@@ -196,7 +197,6 @@ namespace paomiantv {
 
             env->SetIntField(p->m_jObject, p->m_jfldNativeAddr, 0);
             delete p;
-
             LOGI("destroy CJNIModuleClip ok");
         } while (0);
         env->PopLocalFrame(NULL);
@@ -226,7 +226,8 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jClip, jfld);
-            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleClip *) nValue)) {
+            if (nValue == 0 ||
+                !CJNIModuleManager::getInstance()->contains((CJNIModuleClip *) nValue)) {
                 //LOGE("get jni Clip from java object failed");
                 //return NULL;
                 LOGI("try to get a new CJNIModuleClip");
@@ -251,7 +252,7 @@ namespace paomiantv {
                              jlong jduration) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::CreateJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return FALSE;
         }
         s8 achSrcPath[MAX_LEN_FILE_PATH] = {0};
@@ -278,7 +279,7 @@ namespace paomiantv {
     jstring CJNIModuleClip::jni_getSrc(JNIEnv *env, jobject jclip) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return NULL;
         }
 
@@ -288,7 +289,7 @@ namespace paomiantv {
     void CJNIModuleClip::jni_setSrc(JNIEnv *env, jobject jclip, jstring jsrc) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return;
         }
         s8 achSrcPath[MAX_LEN_FILE_PATH] = {0};
@@ -301,7 +302,7 @@ namespace paomiantv {
     jlong CJNIModuleClip::jni_getStart(JNIEnv *env, jobject jclip) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return -1;
         }
 
@@ -311,7 +312,7 @@ namespace paomiantv {
     void CJNIModuleClip::jni_setStart(JNIEnv *env, jobject jclip, jlong jstart) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return;
         }
         pJNIClip->getCClip()->setStart(jstart);
@@ -320,7 +321,7 @@ namespace paomiantv {
     jlong CJNIModuleClip::jni_getDuration(JNIEnv *env, jobject jclip) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return -1;
         }
         return pJNIClip->getCClip()->getDuration();
@@ -329,7 +330,7 @@ namespace paomiantv {
     void CJNIModuleClip::jni_setDuration(JNIEnv *env, jobject jclip, jlong jduration) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return;
         }
         pJNIClip->getCClip()->setDuration(jduration);
@@ -378,7 +379,7 @@ namespace paomiantv {
     jint CJNIModuleClip::jni_getFilterCount(JNIEnv *env, jobject jclip) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return 0;
         }
         return pJNIClip->getCClip()->getFilterCount();
@@ -427,7 +428,7 @@ namespace paomiantv {
     jint CJNIModuleClip::jni_getTransitionCount(JNIEnv *env, jobject jclip) {
         USE_LOG;
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return 0;
         }
         return pJNIClip->getCClip()->getTransitionCount();
@@ -449,6 +450,9 @@ namespace paomiantv {
     }
 
     CJNIModuleTransition *CJNIModuleClip::getTransition(s32 position) {
+        if (m_pClip == NULL) {
+            return NULL;
+        }
         CTransition *pTransition = m_pClip->getTransition(position);
         if (pTransition == NULL) {
             return NULL;
@@ -464,6 +468,9 @@ namespace paomiantv {
     }
 
     BOOL32 CJNIModuleClip::addFilter(CJNIModuleFilter *filter) {
+        if (m_pClip == NULL) {
+            return NULL;
+        }
         m_sJNIFilters.insert(filter);
 
         m_pClip->addFilter(filter->getFilter());
@@ -471,6 +478,9 @@ namespace paomiantv {
     }
 
     BOOL32 CJNIModuleClip::addTransition(CJNIModuleTransition *transition) {
+        if (m_pClip == NULL) {
+            return NULL;
+        }
         m_sJNITransitions.insert(transition);
 
         m_pClip->addTransition(transition->getTransition());
@@ -478,6 +488,9 @@ namespace paomiantv {
     }
 
     CJNIModuleFilter *CJNIModuleClip::removeFilter(s32 nIndex) {
+        if (m_pClip == NULL) {
+            return NULL;
+        }
         CFilter *pFilter = m_pClip->removeFilter(nIndex);
         if (pFilter == NULL) {
             return NULL;
@@ -498,6 +511,9 @@ namespace paomiantv {
     }
 
     CJNIModuleTransition *CJNIModuleClip::removeTransition(s32 nIndex) {
+        if (m_pClip == NULL) {
+            return NULL;
+        }
         CTransition *pTransition = m_pClip->removeTransition(nIndex);
         if (pTransition == NULL) {
             return NULL;

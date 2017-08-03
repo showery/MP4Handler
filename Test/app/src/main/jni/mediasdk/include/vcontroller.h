@@ -1,7 +1,7 @@
 /*******************************************************************************
  *        Module: paomiantv
  *          File: 
- * Functionality: video process
+ * Functionality: video controller
  *       Related: 
  *        System: android
  *      Language: C++
@@ -22,47 +22,43 @@
 #include "autolog.h"
 #include "stdlib.h"
 #include "transparam.h"
+#include "thread.h"
+#include "storyboard.h"
+#include "controller.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CVController
-{
-  private:
-    CVController(){};
-    CVController(const CVController &);
+    class CVController : public CController {
+    private:
+        CVController();
 
-    CVController &operator=(const CVController &);
-    static CVController *m_pInstance;
+        virtual ~CVController();
 
-    class Garbo
-    {
-      public:
-        ~Garbo()
-        {
-            if (CVController::m_pInstance)
-            {
-                delete CVController::m_pInstance;
+        CVController(const CVController &);
+
+        CVController &operator=(const CVController &);
+
+        static CVController *m_pInstance;
+
+        class Garbo {
+        public:
+            ~Garbo() {
+                if (CVController::m_pInstance) {
+                    delete CVController::m_pInstance;
+                }
             }
-        }
+        };
+
+        static Garbo garbo;
+
+        void handle(CStoryboard *pStoryboard);
+
+        //输入输出都是解码后的图像数据(YUV or RGBA)
+        s32 transform(u8 *pbyIn, u8 *pbyOut, void *ptVTransParam);
+
+    public:
+        static CVController *getInstance();
     };
-    static Garbo garbo;
-
-  public:
-    static CVController *getInstance();
-    s32 process(u8 *pbyIn, u8 *pbyOut, TVTransParam *ptVTransParam); //输入输出都是解码后的图像数据(YUV or RGBA)
-};
-
-CVController::Garbo CVController::garbo; // 一定要初始化，不然程序结束时不会析构garbo
-
-CVController *CVController::m_pInstance = NULL;
-
-CVController *CVController::getInstance()
-{
-    if (m_pInstance == NULL)
-        m_pInstance = new CVController();
-    return m_pInstance;
-}
 }
 
 #endif /* _PAOMIANTV_VCONTROLLER_H_ */

@@ -3,6 +3,8 @@ package cn.paomiantv.mediasdk;
 import android.os.Handler;
 import android.os.Looper;
 
+import cn.paomiantv.render.PMRenderer;
+
 /**
  * Created by John on 2017/7/25.
  */
@@ -22,8 +24,8 @@ public class PMStoryboard {
         _uninit();
     }
 
-    public boolean setBGM(String srcPath, long startCutTm,long durationCutTm, long startTm,long endTm) {
-        return _setBGM( srcPath,  startCutTm, durationCutTm,  startTm, endTm);
+    public boolean setBGM(String srcPath, long startCutTm, long durationCutTm, long startTm, long endTm) {
+        return _setBGM(srcPath, startCutTm, durationCutTm, startTm, endTm);
 
     }
 
@@ -32,10 +34,11 @@ public class PMStoryboard {
 
     }
 
-    public boolean insertClip(int position,PMClip clip) {
-        return _intertClip(position,clip);
+    public boolean insertClip(int position, PMClip clip) {
+        return _intertClip(position, clip);
 
     }
+
     public PMClip getClip(int index) {
         return _getClip(index);
     }
@@ -47,12 +50,9 @@ public class PMStoryboard {
     public boolean swapClip(int a, int b) {
         return _swapClip(a, b);
     }
+
     public int getClipCount() {
         return _getClipCount();
-    }
-
-    public boolean process() {
-        return _procsss();
     }
 
     public void setProcessListener(PMStoryboard.ProcessListener listener) {
@@ -63,8 +63,12 @@ public class PMStoryboard {
         mListener = null;
     }
 
-    public void cancel() {
-        _cancel();
+    public boolean attachRenderer(PMRenderer pmRenderer) {
+        return _attachRenderer(pmRenderer);
+    }
+
+    public void detachRenderer() {
+        _detachRenderer();
     }
 
     protected void fireOnFailed(final int error, final String description) {
@@ -138,11 +142,11 @@ public class PMStoryboard {
 
     private native boolean _uninit();
 
-    private native boolean _setBGM(String srcPath, long startCutTm,long durationCutTm, long startTm,long endTm);
+    private native boolean _setBGM(String srcPath, long startCutTm, long durationCutTm, long startTm, long endTm);
 
     private native boolean _addClip(PMClip clip);
 
-    private native boolean _intertClip(int position,PMClip clip);
+    private native boolean _intertClip(int position, PMClip clip);
 
     private native PMClip _removeClip(int position);
 
@@ -152,9 +156,9 @@ public class PMStoryboard {
 
     private native int _getClipCount();
 
-    private native boolean _procsss();
+    private native boolean _attachRenderer(PMRenderer pmRenderer);
 
-    private native boolean _cancel();
+    private native void _detachRenderer();
 
     // member accessed by native methods.
     private int mNativeStoryboardAddress;

@@ -1,7 +1,7 @@
 /*******************************************************************************
  *        Module: mediasdk
  *          File: 
- * Functionality: audio process
+ * Functionality: audio controller
  *       Related: 
  *        System: android
  *      Language: C++
@@ -20,47 +20,42 @@
 #include "autolog.h"
 #include "stdlib.h"
 #include "transparam.h"
+#include "thread.h"
+#include "storyboard.h"
+#include "controller.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CAController
-{
-  private:
-    CAController(){};
-    CAController(const CAController &);
+    class CAController : public CController {
+    private:
+        CAController();
 
-    CAController &operator=(const CAController &);
-    static CAController *m_pInstance;
+        virtual ~CAController();
 
-    class Garbo
-    {
-      public:
-        ~Garbo()
-        {
-            if (CAController::m_pInstance)
-            {
-                delete CAController::m_pInstance;
+        CAController(const CAController &);
+
+        CAController &operator=(const CAController &);
+
+        static CAController *m_pInstance;
+
+        class Garbo {
+        public:
+            ~Garbo() {
+                if (CAController::m_pInstance) {
+                    delete CAController::m_pInstance;
+                }
             }
-        }
+        };
+
+        static Garbo garbo;
+
+        void handle(CStoryboard *pStoryboard);
+        //输入输出都是解码后的声音数据(PCM)
+        BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
+
+    public:
+        static CAController *getInstance();
     };
-    static Garbo garbo;
-
-  public:
-    static CAController *getInstance();
-    BOOL32 process(u8 *pbyIn, u8 *pbyOut, TATransParam *ptATransParam); //输入输出都是解码后的声音数据(PCM)
-};
-
-CAController::Garbo CAController::garbo; // 一定要初始化，不然程序结束时不会析构garbo
-
-CAController *CAController::m_pInstance = NULL;
-
-CAController *CAController::getInstance()
-{
-    if (m_pInstance == NULL)
-        m_pInstance = new CAController();
-    return m_pInstance;
-}
 }
 
-#endif /* _PAOMIANTV_LOADMODULE_H_ */
+#endif /* _PAOMIANTV_ACONTROLLER_H_ */

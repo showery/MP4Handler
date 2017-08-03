@@ -38,11 +38,13 @@ namespace paomiantv {
     public:
         static TJavaClazzParam *GetJavaClazzParam();
 
-        static CJNIModuleRenderer * CreateJniRenderer(JNIEnv *env, jobject jRenderer);
-        static CJNIModuleRenderer * GetJniRenderer(JNIEnv *env, jobject jRenderer);
-        static void DestroyJniRenderer(CJNIModuleRenderer* &p);
-        static bool IsValid(CJNIModuleRenderer *p);
+        static CJNIModuleRenderer *CreateJniRenderer(JNIEnv *env, jobject jRenderer);
 
+        static CJNIModuleRenderer *GetJniRenderer(JNIEnv *env, jobject jRenderer);
+
+        static void DestroyJniRenderer(CJNIModuleRenderer *&p);
+
+        static bool IsValid(CJNIModuleRenderer *p);
 
 
     private:
@@ -92,29 +94,47 @@ namespace paomiantv {
 
     public:
         void newFrameCallback();
+
         void Draw();
+
         void Init(int nWidth, int nHeight);
 
         inline void SetPause(BOOL32 isPause);
+
         inline bool GetPause();
+
         inline void SetRotate(float fDegree);
+
         inline float GetRotate();
+
         inline void SetTranslate(float fTranslateX, float fTranslateY, float fTranslateZ);
+
         inline float GetTranslate(int nTranslateEnum);
+
         inline void SetScale(float fScaleX, float fScaleY, float fScaleZ);
+
         inline float GetScale(int nScaleEnum);
+
         inline void SetDirection(int nDir);
+
         inline int GetDirection();
+
         inline void SetFlip(int nFlip);
+
         inline int GetFlip();
+
         inline bool IsEmptyFrame();
 
+        inline CRenderer *getRenderer();
+
         void SetFrame(unsigned char *pbyData, int nWidth, int nHeight);
+
         void SetFrame(unsigned char *pbyData, int nWidth, int nHeight,
                       int nFrameDirection,      // recommendation for display orientation
                       bool bIsFrontCamera,      // whether is captured from front camera
                       unsigned long long uTimestamp); // the timestamp of capture this frame
         void SetChannel(int nChannel);
+
         /*!
          * \brief   set the aspect state which indicates how to keep aspect ratio.
          * \param   nState binary format:
@@ -126,126 +146,118 @@ namespace paomiantv {
          * \date    2017-08-01
          */
         inline void SetAspectState(int nState);
+
         inline int GetAspectState();
+
         void Refresh();
+
         /*!
          * \brief   whether keep the aspect ratio or not.
          * \author  huang xuefeng
          * \date    2017-08-01
          */
         inline void KeepAspectRatio(EMAspectRatio mode);
-        inline void QuerySettings(TRendererSettings* settings);
-        inline void UpdateSettings(const TRendererSettings & settings);
+
+        inline void QuerySettings(TRendererSettings *settings);
+
+        inline void UpdateSettings(const TRendererSettings &settings);
 
     private:
         CJNIModuleRenderer(JNIEnv *env, jobject jRenderer,
-                jclass jcls, jfieldID jfld, jmethodID jmtd);
+                           jclass jcls, jfieldID jfld, jmethodID jmtd);
+
         ~CJNIModuleRenderer();
 
-        JavaVM          *m_jvm;
-        jclass           m_jcls;
-        jfieldID         m_jfld;
-        jmethodID        m_jmtd;
+        JavaVM *m_jvm;
+        jclass m_jcls;
+        jfieldID m_jfld;
+        jmethodID m_jmtd;
     };
 
 
 /*
  * inline member functions implementation
  */
+    inline CRenderer *CJNIModuleRenderer::getRenderer() {
+        return m_pRenderer;
+    }
 
-    inline void CJNIModuleRenderer::SetPause(BOOL32 isPause)
-    {
+    inline void CJNIModuleRenderer::SetPause(BOOL32 isPause) {
         m_pRenderer->SetPause(isPause);
     }
 
-    inline bool CJNIModuleRenderer::GetPause()
-    {
+    inline bool CJNIModuleRenderer::GetPause() {
         return m_pRenderer->GetPause();
     }
 
-    inline void CJNIModuleRenderer::SetRotate(float fDegree)
-    {
+    inline void CJNIModuleRenderer::SetRotate(float fDegree) {
         m_pRenderer->SetRotate(fDegree);
     }
 
-    inline float CJNIModuleRenderer::GetRotate()
-    {
+    inline float CJNIModuleRenderer::GetRotate() {
         return m_pRenderer->GetRotate();
     }
 
-    inline void CJNIModuleRenderer::SetTranslate(float fTranslateX, float fTranslateY, float fTranslateZ)
-    {
+    inline void
+    CJNIModuleRenderer::SetTranslate(float fTranslateX, float fTranslateY, float fTranslateZ) {
         m_pRenderer->SetTranslate(fTranslateX, fTranslateY, fTranslateZ);
     }
 
-    inline float CJNIModuleRenderer::GetTranslate(int nTranslateEnum)
-    {
-        return m_pRenderer->GetTranslate((EMDirect)nTranslateEnum);
+    inline float CJNIModuleRenderer::GetTranslate(int nTranslateEnum) {
+        return m_pRenderer->GetTranslate((EMDirect) nTranslateEnum);
     }
 
-    inline void CJNIModuleRenderer::SetScale(float fScaleX, float fScaleY, float fScaleZ)
-    {
+    inline void CJNIModuleRenderer::SetScale(float fScaleX, float fScaleY, float fScaleZ) {
         m_pRenderer->SetScale(fScaleX, fScaleY, fScaleZ);
     }
 
-    inline float CJNIModuleRenderer::GetScale(int nScaleEnum)
-    {
-        return m_pRenderer->GetScale((EMDirect)nScaleEnum);
+    inline float CJNIModuleRenderer::GetScale(int nScaleEnum) {
+        return m_pRenderer->GetScale((EMDirect) nScaleEnum);
     }
 
-    inline void CJNIModuleRenderer::SetDirection(int nDir)
-    {
+    inline void CJNIModuleRenderer::SetDirection(int nDir) {
         m_pRenderer->SetDirection(nDir);
     }
 
-    inline int CJNIModuleRenderer::GetDirection()
-    {
+    inline int CJNIModuleRenderer::GetDirection() {
         return m_pRenderer->GetDirection();
     }
 
-    inline void CJNIModuleRenderer::SetFlip(int nFlip)
-    {
+    inline void CJNIModuleRenderer::SetFlip(int nFlip) {
         m_pRenderer->SetFlip(nFlip);
     }
 
-    inline int CJNIModuleRenderer::GetFlip()
-    {
+    inline int CJNIModuleRenderer::GetFlip() {
         return m_pRenderer->GetFlip();
     }
 
 // huangxuefeng 2017-08-01
-    inline void CJNIModuleRenderer::KeepAspectRatio(EMAspectRatio mode)
-    {
+    inline void CJNIModuleRenderer::KeepAspectRatio(EMAspectRatio mode) {
         m_pRenderer->KeepAspectRatio(mode);
     }
 
 // huangxuefeng 2017-08-01
-    inline void CJNIModuleRenderer::SetAspectState(int nState)
-    {
+    inline void CJNIModuleRenderer::SetAspectState(int nState) {
         m_pRenderer->SetAspectState(nState);
     }
 
 // huangxuefeng 2017-08-01
-    inline int CJNIModuleRenderer::GetAspectState()
-    {
+    inline int CJNIModuleRenderer::GetAspectState() {
         return m_pRenderer->GetAspectState();
     }
 
 // huangxuefeng 2017-08-01
-    inline void CJNIModuleRenderer::QuerySettings(TRendererSettings* settings)
-    {
+    inline void CJNIModuleRenderer::QuerySettings(TRendererSettings *settings) {
         m_pRenderer->QuerySettings(settings);
     }
 
 // huangxuefeng 2017-08-01
-    inline void CJNIModuleRenderer::UpdateSettings(const TRendererSettings & settings)
-    {
+    inline void CJNIModuleRenderer::UpdateSettings(const TRendererSettings &settings) {
         m_pRenderer->UpdateSettings(settings);
     }
 
 // huangxuefeng 2017-08-01
-    inline bool CJNIModuleRenderer::IsEmptyFrame()
-    {
+    inline bool CJNIModuleRenderer::IsEmptyFrame() {
         return m_pRenderer->IsEmptyFrame();
     }
 }

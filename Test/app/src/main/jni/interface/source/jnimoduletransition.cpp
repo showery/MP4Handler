@@ -89,8 +89,10 @@ namespace paomiantv {
         if (m_jObject != NULL) {
             env->DeleteGlobalRef(m_jObject);
             m_jObject = NULL;
-            m_jfldNativeAddr = NULL;
+
         }
+        m_jfldNativeAddr = NULL;
+        m_jvm=NULL;
 
         // be sure unregister before killing
         CJNIModuleManager::getInstance()->remove(this);

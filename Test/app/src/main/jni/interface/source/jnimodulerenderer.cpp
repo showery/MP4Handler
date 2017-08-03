@@ -107,6 +107,25 @@ namespace paomiantv{
             LOGD("renderer instance freed: %u", sizeof(CRenderer));
         }
 
+        JNIEnv *env = NULL;
+        if (m_jvm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
+            LOGE("get JNIEnv failed");
+            return;
+        }
+
+        if (m_jObject != NULL) {
+            env->DeleteGlobalRef(m_jObject);
+            m_jObject = NULL;
+        }
+        if (m_jcls!=NULL){
+            env->DeleteGlobalRef(m_jcls);
+            m_jcls = NULL;
+        }
+        m_jfldNativeAddr = NULL;
+        m_jvm=NULL;
+        m_jfld=NULL;
+        m_jmtd = NULL;
+
         // be sure unregister before killing
         CJNIModuleManager::getInstance()->remove(this);
     }

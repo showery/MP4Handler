@@ -5,7 +5,7 @@ INTERFACE_SRC_DIR    := source
 INTERFACE_INC_DIR    := include
 COMM_DIR    		 := ../common/include
 RENDER_DIR    	     := ../render/include
-MEDIASDK_DIR    	 := ../mediasdk/include
+MEDIASDK_DIR    	 := ../mediasdk/include ../mediasdk/module/include
 MP4V2_DIR    	 	 := ../mp4v2/include
 INC_PATH    	 := $(INTERFACE_INC_DIR)\
 			$(RENDER_DIR) \

@@ -15,10 +15,30 @@
 
 #include "acontroller.h"
 
-namespace paomiantv
-{
-    BOOL32 CAController::process(u8 *pbyIn, u8 *pbyOut, TATransParam *ptATransParam)
+namespace paomiantv {
+
+    CAController::Garbo CAController::garbo; // 一定要初始化，不然程序结束时不会析构garbo
+
+    CAController *CAController::m_pInstance = NULL;
+
+    CAController *CAController::getInstance() {
+        if (m_pInstance == NULL)
+            m_pInstance = new CAController();
+        return m_pInstance;
+    }
+
+    CAController::CAController()
     {
+    }
+
+    CAController::~CAController() {
+    }
+
+    BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {
         return TRUE;
     }
+
+    void CAController::handle(CStoryboard *pStoryboard) {
+    }
+
 }

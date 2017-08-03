@@ -41,8 +41,7 @@ namespace paomiantv {
     }
 
 
-    CJNIModuleFilter::CJNIModuleFilter(JNIEnv *env, jobject jFilter, jfieldID jfld)
-    {
+    CJNIModuleFilter::CJNIModuleFilter(JNIEnv *env, jobject jFilter, jfieldID jfld) {
         USE_LOG;
 
         if (env == NULL || jFilter == NULL || jfld == NULL) {
@@ -90,6 +89,7 @@ namespace paomiantv {
             env->DeleteGlobalRef(m_jObject);
             m_jObject = NULL;
             m_jfldNativeAddr = NULL;
+            m_jvm = NULL;
         }
 
         // be sure unregister before killing
@@ -194,7 +194,8 @@ namespace paomiantv {
             }
 
             jint nValue = env->GetIntField(jFilter, jfld);
-            if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleFilter *) nValue)) {
+            if (nValue == 0 ||
+                !CJNIModuleManager::getInstance()->contains((CJNIModuleFilter *) nValue)) {
                 //LOGE("get jni Filter from java object failed");
                 //return NULL;
                 LOGI("try to get a new CJNIModuleFilter");
@@ -214,10 +215,11 @@ namespace paomiantv {
         return CJNIModuleManager::getInstance()->contains(p);
     }
 
-    jboolean CJNIModuleFilter::jni_init(JNIEnv *env, jobject jFilter, jstring jsrc, jlong jstart, jlong jduration) {
+    jboolean CJNIModuleFilter::jni_init(JNIEnv *env, jobject jFilter, jstring jsrc, jlong jstart,
+                                        jlong jduration) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::CreateJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return FALSE;
         }
         s8 achSrcPath[MAX_LEN_FILE_PATH] = {0};
@@ -244,7 +246,7 @@ namespace paomiantv {
     jstring CJNIModuleFilter::jni_getSrc(JNIEnv *env, jobject jFilter) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return NULL;
         }
 
@@ -254,7 +256,7 @@ namespace paomiantv {
     void CJNIModuleFilter::jni_setSrc(JNIEnv *env, jobject jFilter, jstring jsrc) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return;
         }
         s8 achSrcPath[MAX_LEN_FILE_PATH] = {0};
@@ -267,7 +269,7 @@ namespace paomiantv {
     jlong CJNIModuleFilter::jni_getStart(JNIEnv *env, jobject jFilter) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return -1;
         }
 
@@ -277,7 +279,7 @@ namespace paomiantv {
     void CJNIModuleFilter::jni_setStart(JNIEnv *env, jobject jFilter, jlong jstart) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return;
         }
         pJNIFilter->getFilter()->setStart(jstart);
@@ -286,7 +288,7 @@ namespace paomiantv {
     jlong CJNIModuleFilter::jni_getDuration(JNIEnv *env, jobject jFilter) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return -1;
         }
         return pJNIFilter->getFilter()->getDuration();
@@ -295,7 +297,7 @@ namespace paomiantv {
     void CJNIModuleFilter::jni_setDuration(JNIEnv *env, jobject jFilter, jlong jduration) {
         USE_LOG;
         CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
-        if (pJNIFilter == NULL) {
+        if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return;
         }
         pJNIFilter->getFilter()->setDuration(jduration);

@@ -37,6 +37,8 @@ namespace paomiantv {
 
         static CJNIModuleFilter *GetJniFilter(JNIEnv *env, jobject jfilter);
 
+        static bool IsValid(CJNIModuleFilter *p);
+
         static void DestroyJniFilter(CJNIModuleFilter *&p);
 
 
@@ -44,9 +46,6 @@ namespace paomiantv {
         CJNIModuleFilter(JNIEnv *env, jobject jfilter, jfieldID jfld);
 
         virtual ~CJNIModuleFilter();
-
-        static bool IsValid(CJNIModuleFilter *p);
-
 
         static jboolean jni_init(JNIEnv *env, jobject jfilter, jstring jsrc, jlong jstart,
                                  jlong jduration);

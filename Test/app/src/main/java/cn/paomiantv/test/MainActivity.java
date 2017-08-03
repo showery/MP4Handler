@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         PMEngine.getInstance().destoryStoryboard(storyboard);
                     }
                 });
+                PMEngine.getInstance().process(storyboard);
                 storyboard.process();
             }
             break;
