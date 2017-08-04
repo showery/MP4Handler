@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_clip: {
-                PMStoryboard storyboard = PMEngine.getInstance().createStoryboard(clipDst);
+                PMStoryboard storyboard = new PMStoryboard(clipDst);
                 PMClip clip = new PMClip(clipSrc, 2000l, 5000l);
                 storyboard.addClip(clip);
                 storyboard.setProcessListener(new PMStoryboard.ProcessListener() {
@@ -66,11 +66,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onAlways(PMStoryboard storyboard) {
-                        PMEngine.getInstance().destoryStoryboard(storyboard);
+                        storyboard.destory();
                     }
                 });
-                PMEngine.getInstance().process(storyboard);
-                storyboard.process();
+                PMEngine.getInstance().setDataSource(storyboard);
+                PMEngine.getInstance().start(false);
             }
             break;
             case R.id.btn_join: {
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 arrSrc.add(joinSrc1);
                 arrSrc.add(joinSrc2);
                 arrSrc.add(joinSrc3);
-                PMStoryboard storyboard = PMEngine.getInstance().createStoryboard(joinDst);
+                PMStoryboard storyboard = new PMStoryboard(joinDst);
                 PMClip clip = new PMClip(joinSrc1, -1, -1);
                 storyboard.addClip(clip);
                 clip = new PMClip(joinSrc2,-1,-1);
@@ -103,10 +103,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onAlways(PMStoryboard storyboard) {
-                        PMEngine.getInstance().destoryStoryboard(storyboard);
+                        storyboard.destory();
                     }
                 });
-                storyboard.process();
+                PMEngine.getInstance().setDataSource(storyboard);
+                PMEngine.getInstance().start(false);
             }
             break;
             default:

@@ -499,11 +499,8 @@ namespace paomiantv {
         for (iter = m_sJNIFilters.begin(); iter != m_sJNIFilters.end();) {
             if (*iter != NULL && (*iter)->getFilter() == pFilter) {
                 CJNIModuleFilter *pJNIFilter = *iter;
-
                 m_sJNIFilters.erase(iter);
                 return pJNIFilter;
-
-
             }
             ++iter;
         }

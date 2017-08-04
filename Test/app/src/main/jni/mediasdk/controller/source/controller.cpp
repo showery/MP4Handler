@@ -14,59 +14,43 @@
  ******************************************************************************/
 
 #include <typedef.h>
-#include "ctrlmanager.h"
+#include "controller.h"
 
 namespace paomiantv
 {
 
-CController::CController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-    : m_bIsWithPreview(bIsWithPreview),
-      m_pStoryboard(pStoryboard)
+CController::CController(CStoryboard *pStoryboard, BOOL32 bIsSave)
+    : m_bIsSave(bIsSave),
+      m_pStoryboard(pStoryboard),
+      m_bIsStoped(FALSE),
+      m_bIsPaused(FALSE)
 {
     USE_LOG;
-    init();
+    m_pLock = new CLock;
+    m_pThread = new CThread(ThreadWrapper,this);
 }
 
 CController::~CController()
 {
     USE_LOG;
-    uninit();
-}
-
-void CController::init()
-{
-    m_pLock = new CLock;
-}
-
-void CController::uninit()
-{
     if (m_pLock != NULL)
     {
         m_pLock = new CLock;
+        m_pLock = NULL;
     }
-}
-void CController::start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-{
-    m_pVCtrl->start(pStoryboard, bIsWithPreview);
-    m_pACtrl->start(pStoryboard, bIsWithPreview);
-    m_bIsWithPreview = bIsWithPreview;
-}
-
-void CController::stop()
-{
-    m_pVCtrl->stop();
-    m_pACtrl->stop();
+    if(m_pThread!=NULL){
+        delete m_pThread;
+        m_pThread=NULL;
+    }
+    
 }
 
-void CController::resume()
+//static
+void *CController::ThreadWrapper(void *pThis)
 {
-    m_pVCtrl->resume();
-    m_pACtrl->resume();
-}
-
-void CController::pause()
-{
-    m_pVCtrl->pause();
-    m_pACtrl->pause();
+    CThread::SetName(typeid(*pThis).name());
+    CController *p = (CController *)pThis;
+    int nErr = p->run();
+    return (void *)nErr;
 }
 }

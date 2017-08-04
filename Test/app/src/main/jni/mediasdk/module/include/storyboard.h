@@ -16,8 +16,6 @@
 #define _PAOMIANTV_STORYBOARD_H_
 
 class CClip;
-
-#include <jni.h>
 #include "thread.h"
 #include "typedef.h"
 #include "autolock.h"

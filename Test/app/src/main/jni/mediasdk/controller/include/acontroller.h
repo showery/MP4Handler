@@ -23,33 +23,34 @@
 #include "aprocessor.h"
 #include "storyboard.h"
 #include "controller.h"
+#include "../../module/include/storyboard.h"
+#include "../../processor/include/aprocessor.h"
 
 namespace paomiantv
 {
 
-class CAController:public CController
+class CAController : public CController
 {
   public:
-    CAController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    CAController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-     ~CAController();
+    ~CAController();
 
-    void start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    void start(BOOL32 bIsSave);
+
+    void stop();
+
+    void resume();
+
+    void pause();
+    
+    void seekTo(s64 sllPosition);
 
   private:
-    static void *ThreadWrapper(void *pData);
-
-    void ThreadEntry(CStoryboard *pStoryboard);
-
-    BOOL32 m_bIsStop;
-    BOOL32 m_bIsStarted;
-    BOOL32 m_bIsNeedPreview;
-    CThread *m_pThread;
-    ILock *m_pLock;
-
     CAProcessor *m_pProcessor;
 
   private:
+    int run();
     void handle(CStoryboard *pStoryboard);
     s32 getSampleNum(CStoryboard *pStoryboard);
     //输入输出都是解码后的声音数据(PCM)

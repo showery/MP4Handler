@@ -13,9 +13,6 @@
  * 2017-08-02  v1.0        huangxuefeng  created
  ******************************************************************************/
 
-
-#include <producer.h>
-#include "storyboard.h"
 #include "engine.h"
 #include "autolog.h"
 #include "producer.h"
@@ -58,38 +55,44 @@ namespace paomiantv {
         }
     }
 
-    void CEngine::startPreview(CStoryboard *pStoryboard) {
-        CProducer::getInstance()->start(pStoryboard);
-    }
+    void CEngine::start(BOOL32 bIsSave) {
+        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+            m_pProducer->start(bIsSave);
+        }
 
-    void CEngine::pausePreview() {
-        CProducer::getInstance()->pause();
-    }
-
-    void CEngine::resumePreview() {
-        CProducer::getInstance()->resume();
-    }
-
-    void CEngine::stopPreview() {
-        CProducer::getInstance()->stop();
-    }
-
-    void CEngine::produce(CStoryboard *pStoryboard) {
-
-        CProducer::getInstance()->start(pStoryboard,FALSE);
     }
 
     void CEngine::resume() {
-        CProducer::getInstance()->resume();
+        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+            m_pProducer->resume();
+        }
     }
 
     void CEngine::pause() {
-        CProducer::getInstance()->pause();
+        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+            m_pProducer->pause();
+        }
     }
 
     void CEngine::cancel() {
-        CProducer::getInstance()->stop();
+        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+            m_pProducer->stop();
+            delete m_pProducer;
+            m_pProducer = NULL;
+        }
     }
 
+    void CEngine::seekTo(s64 sllPosition) {
+        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+            m_pProducer->seekTo(sllPosition);
+        }
+    }
 
+    void CEngine::setDataSource(CStoryboard *pStoryboard) {
+        if (pStoryboard != NULL) {
+            m_pStoryboard = pStoryboard;
+            m_pProducer = new CProducer(pStoryboard);
+        }
+
+    }
 }

@@ -28,30 +28,29 @@
 namespace paomiantv
 {
 
-class CVController:public CController
+class CVController : public CController
 {
 
-public:
-    CVController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+  public:
+    CVController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-     ~CVController();
+    ~CVController();
 
-    void start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    void start(BOOL32 bIsSave);
 
-private:
-    static void *ThreadWrapper(void *pData);
+    void stop();
 
-     void ThreadEntry(CStoryboard *pStoryboard);
+    void resume();
 
-    BOOL32 m_bIsStop;
-    BOOL32 m_bIsStarted;
-    BOOL32 m_bIsNeedPreview;
-    CThread *m_pThread;
-    ILock *m_pLock;
+    void pause();
 
+    void seekTo(s64 sllPosition);
+
+  private:
     CVProcessor *m_pProcessor;
 
-private:
+  private:
+    int run();
     void handle(CStoryboard *pStoryboard);
     s32 getSampleNum(CStoryboard *pStoryboard);
     //输入输出都是解码后的声音数据(YUV)

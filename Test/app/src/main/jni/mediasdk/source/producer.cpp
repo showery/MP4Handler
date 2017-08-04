@@ -12,81 +12,86 @@
  * Date        Version     Reviser       Description
  * 2017-08-03  v1.0        huangxuefeng  created
  ******************************************************************************/
-#include <controller/include/ctrlmanager.h>
+
 #include "typedef.h"
 #include "producer.h"
-#include "ctrlmanager.h"
 
-namespace paomiantv
-{
-// CProducer::Garbo CProducer::garbo; // 一定要初始化，不然程序结束时不会析构garbo
+namespace paomiantv {
 
-// CProducer *CProducer::m_pInstance = NULL;
-
-// CProducer *CProducer::getInstance() {
-//     if (m_pInstance == NULL)
-//         m_pInstance = new CProducer();
-//     return m_pInstance;
-// }
-
-CProducer::CProducer(CStoryboard *pStoryboard)
-    : m_pStoryboard(pStoryboard),
-      m_bIsStarted(FALSE),
-      m_bIsPaused(FALSE)
-{
-    m_pLock = new CLock;
-}
-
-CProducer::~CProducer()
-{
-    delete m_pLock;
-    m_pLock = NULL;
-}
-
-void CProducer::start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (!m_bIsStarted)
-    {
-        CCtrlManager::getInstance()->start(pStoryboard, bIsWithPreview);
-        m_bIsStarted = TRUE;
-        m_bIsPaused = FALSE;
+    CProducer::CProducer(CStoryboard *pStoryboard, BOOL32 bIsSave)
+            : m_pStoryboard(pStoryboard),
+              m_bIsStarted(FALSE),
+              m_bIsPaused(FALSE),
+              m_bIsSave(bIsSave) {
+        m_pLock = new CLock;
+        m_pVController = new CVController(pStoryboard, bIsSave);
+        m_pAController = new CAController(pStoryboard, bIsSave);
     }
-    END_AUTOLOCK;
-}
 
-void CProducer::stop()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (!m_bIsStarted)
-    {
-        CCtrlManager::getInstance()->stop();
-        m_bIsStarted = FALSE;
-        m_bIsPaused = FALSE;
+    CProducer::~CProducer() {
+        if (m_pVController != NULL) {
+            delete m_pVController;
+            m_pVController = NULL;
+        }
+        if (m_pAController != NULL) {
+            delete m_pAController;
+            m_pAController = NULL;
+        }
+        if (m_pLock != NULL) {
+            delete m_pLock;
+            m_pLock = NULL;
+        }
     }
-    END_AUTOLOCK;
-}
 
-void CProducer::resume()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted && m_bIsPaused)
-    {
-
-        m_bIsPaused = FALSE;
-        CCtrlManager::getInstance()->resume();
+    void CProducer::start(BOOL32 bIsSave) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (!m_bIsStarted) {
+                m_pAController->start(bIsSave);
+                m_pVController->start(bIsSave);
+                m_bIsStarted = TRUE;
+                m_bIsPaused = FALSE;
+            }
+        END_AUTOLOCK;
     }
-    END_AUTOLOCK;
-}
 
-void CProducer::pause()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted && !m_bIsPaused)
-    {
-        m_bIsPaused = TRUE;
-        CCtrlManager::getInstance()->pause();
+    void CProducer::stop() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (!m_bIsStarted) {
+                m_pAController->stop();
+                m_pVController->stop();
+                m_bIsStarted = FALSE;
+                m_bIsPaused = FALSE;
+            }
+        END_AUTOLOCK;
     }
-    END_AUTOLOCK;
-}
+
+    void CProducer::resume() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && m_bIsPaused) {
+
+                m_bIsPaused = FALSE;
+                m_pAController->resume();
+                m_pVController->resume();
+            }
+        END_AUTOLOCK;
+    }
+
+    void CProducer::pause() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsPaused) {
+                m_bIsPaused = TRUE;
+                m_pAController->pause();
+                m_pVController->pause();
+            }
+        END_AUTOLOCK;
+    }
+
+    void CProducer::seekTo(s64 sllPosition) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsSave) {
+                m_pAController->seekTo(sllPosition);
+                m_pVController->seekTo(sllPosition);
+            }
+        END_AUTOLOCK;
+    }
 }

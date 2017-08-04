@@ -51,15 +51,11 @@ namespace paomiantv {
 
         static void jni_uninit(JNIEnv *env, jobject jengine);
 
-        static void jni_startPreview(JNIEnv *env, jobject jengine, jobject jstoryboard);
+        static void jni_setDataSource(JNIEnv *env, jobject jengine, jobject jstoryboard);
 
-        static void jni_pausePreview(JNIEnv *env, jobject jengine);
+        static void jni_start(JNIEnv *env, jobject jengine, jboolean jisSave);
 
-        static void jni_resumePreview(JNIEnv *env, jobject jengine);
-
-        static void jni_stopPreview(JNIEnv *env, jobject jengine);
-
-        static void jni_produce(JNIEnv *env, jobject jengine, jobject jstoryboard);
+        static void jni_seekTo(JNIEnv *env, jobject jengine, jlong jposition);
 
         static void jni_pause(JNIEnv *env, jobject jengine);
 

@@ -15,6 +15,7 @@
 #ifndef _PAOMIANTV_CONTROLLER_H_
 #define _PAOMIANTV_CONTROLLER_H_
 
+#include <typeinfo>
 #include "typedef.h"
 #include "autolock.h"
 #include "autolog.h"
@@ -29,25 +30,33 @@ namespace paomiantv
 class CController
 {
   protected:
-    CController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    CController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
     virtual ~CController();
 
-    BOOL32 m_bIsWithPreview;
-    const CStoryboard *m_pStoryboard;
+    virtual int run() = 0;
+
+    BOOL32 m_bIsSave;
+    CStoryboard *m_pStoryboard;
+
     ILock *m_pLock;
+    CThread *m_pThread;
+
+    BOOL32 m_bIsStoped;
+    BOOL32 m_bIsPaused;
+
+  private:
+    static void *ThreadWrapper(void *pData);
 
   public:
-    virtual void init();
+    virtual void start(BOOL32 bIsSave) = 0;
 
-    virtual void uninit();
+    virtual void stop() = 0;
 
-    virtual void start();
+    virtual void resume() = 0;
 
-    virtual void stop();
+    virtual void pause() = 0;
 
-    virtual void resume();
-
-    virtual void pause();
+    virtual void seekTo(s64 sllPosition) = 0;
 };
 }
 
