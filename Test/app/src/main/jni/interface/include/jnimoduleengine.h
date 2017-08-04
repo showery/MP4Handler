@@ -59,7 +59,7 @@ namespace paomiantv {
 
         static void jni_stopPreview(JNIEnv *env, jobject jengine);
 
-        static void jni_progress(JNIEnv *env, jobject jengine, jobject jstoryboard);
+        static void jni_produce(JNIEnv *env, jobject jengine, jobject jstoryboard);
 
         static void jni_pause(JNIEnv *env, jobject jengine);
 

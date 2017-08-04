@@ -26,7 +26,7 @@ namespace paomiantv {
                 {
                         {"_init",          "()Z",                                   (void *) jni_init},
                         {"_uninit",        "()V",                                   (void *) jni_uninit},
-                        {"_progress",      "(Lcn/paomiantv/render/PMStoryboard;)V", (void *) jni_progress},
+                        {"_produce",      "(Lcn/paomiantv/render/PMStoryboard;)V", (void *) jni_produce},
                         {"_pause",         "()V",                                   (void *) jni_pause},
                         {"_resume",        "()V",                                   (void *) jni_resume},
                         {"_cancel",        "()V",                                   (void *) jni_cancel},
@@ -235,7 +235,7 @@ namespace paomiantv {
     }
 
 
-    void CJNIModuleEngine::jni_progress(JNIEnv *env, jobject jengine, jobject jstoryboard) {
+    void CJNIModuleEngine::jni_produce(JNIEnv *env, jobject jengine, jobject jstoryboard) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
@@ -248,7 +248,7 @@ namespace paomiantv {
             return;
         }
 
-        pJNIEngine->getEngine()->process(pJNIStoryboard->getCStoryboard());
+        pJNIEngine->getEngine()->produce(pJNIStoryboard->getCStoryboard());
     }
 
     void CJNIModuleEngine::jni_pause(JNIEnv *env, jobject jengine) {

@@ -154,14 +154,14 @@ namespace paomiantv {
                 //m_bPaused = TRUE;
             }
 
-            // init background rendering
+            // parse background rendering
             m_bInited = m_rendBackground.init();
             if (!m_bInited) {
                 LOGE("channel#%d: error", m_nChannel);
                 return;
             }
 
-            // init frame rendering
+            // parse frame rendering
             m_bInited = m_rendFrame.init();
             if (!m_bInited) {
                 LOGE("channel#%d: error", m_nChannel);

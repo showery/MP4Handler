@@ -16,49 +16,47 @@
 #ifndef _PAOMIANTV_VCONTROLLER_H_
 #define _PAOMIANTV_VCONTROLLER_H_
 
-#include "typedef.h"
 #include "autolock.h"
-#include "version.h"
 #include "autolog.h"
 #include "stdlib.h"
 #include "transparam.h"
 #include "thread.h"
+#include "vprocessor.h"
 #include "storyboard.h"
 #include "controller.h"
 
-namespace paomiantv {
+namespace paomiantv
+{
 
-    class CVController : public CController {
-    private:
-        CVController();
+class CVController:public CController
+{
 
-        virtual ~CVController();
+public:
+    CVController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
 
-        CVController(const CVController &);
+     ~CVController();
 
-        CVController &operator=(const CVController &);
+    void start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
 
-        static CVController *m_pInstance;
+private:
+    static void *ThreadWrapper(void *pData);
 
-        class Garbo {
-        public:
-            ~Garbo() {
-                if (CVController::m_pInstance) {
-                    delete CVController::m_pInstance;
-                }
-            }
-        };
+     void ThreadEntry(CStoryboard *pStoryboard);
 
-        static Garbo garbo;
+    BOOL32 m_bIsStop;
+    BOOL32 m_bIsStarted;
+    BOOL32 m_bIsNeedPreview;
+    CThread *m_pThread;
+    ILock *m_pLock;
 
-        void handle(CStoryboard *pStoryboard);
+    CVProcessor *m_pProcessor;
 
-        //输入输出都是解码后的图像数据(YUV or RGBA)
-        s32 transform(u8 *pbyIn, u8 *pbyOut, void *ptVTransParam);
-
-    public:
-        static CVController *getInstance();
-    };
+private:
+    void handle(CStoryboard *pStoryboard);
+    s32 getSampleNum(CStoryboard *pStoryboard);
+    //输入输出都是解码后的声音数据(YUV)
+    BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
+};
 }
 
 #endif /* _PAOMIANTV_VCONTROLLER_H_ */

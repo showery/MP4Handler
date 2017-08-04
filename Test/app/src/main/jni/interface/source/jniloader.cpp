@@ -62,6 +62,8 @@ namespace paomiantv {
         loadModule(env, CJNIModuleEngine::GetJavaClazzParam());
         loadModule(env, CJNIModuleStoryboard::GetJavaClazzParam());
         loadModule(env, CJNIModuleClip::GetJavaClazzParam());
+        loadModule(env, CJNIModuleFilter::GetJavaClazzParam());
+        loadModule(env, CJNIModuleTransition::GetJavaClazzParam());
         loadModule(env, CJNIModuleRenderer::GetJavaClazzParam());
         return 0;
     }

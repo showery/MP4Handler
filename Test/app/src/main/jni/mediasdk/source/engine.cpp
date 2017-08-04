@@ -14,11 +14,11 @@
  ******************************************************************************/
 
 
+#include <producer.h>
 #include "storyboard.h"
 #include "engine.h"
 #include "autolog.h"
-#include "acontroller.h"
-#include "vcontroller.h"
+#include "producer.h"
 
 namespace paomiantv {
 
@@ -59,48 +59,36 @@ namespace paomiantv {
     }
 
     void CEngine::startPreview(CStoryboard *pStoryboard) {
-        CVController::getInstance()->startPreview(pStoryboard);
-        CAController::getInstance()->startPreview(pStoryboard);
+        CProducer::getInstance()->start(pStoryboard);
     }
 
     void CEngine::pausePreview() {
-        CVController::getInstance()->pausePreview();
-        CAController::getInstance()->pausePreview();
+        CProducer::getInstance()->pause();
     }
 
     void CEngine::resumePreview() {
-        CVController::getInstance()->resumePreview();
-        CAController::getInstance()->resumePreview();
+        CProducer::getInstance()->resume();
     }
 
     void CEngine::stopPreview() {
-        CVController::getInstance()->stopPreview();
-        CAController::getInstance()->stopPreview();
+        CProducer::getInstance()->stop();
     }
 
-    void CEngine::process(CStoryboard *pStoryboard) {
+    void CEngine::produce(CStoryboard *pStoryboard) {
 
-        CVController::getInstance()->start(pStoryboard);
-
-        CAController::getInstance()->start(pStoryboard);
+        CProducer::getInstance()->start(pStoryboard,FALSE);
     }
 
     void CEngine::resume() {
-        CVController::getInstance()->resume();
-
-        CAController::getInstance()->resume();
+        CProducer::getInstance()->resume();
     }
 
     void CEngine::pause() {
-        CVController::getInstance()->pause();
-
-        CAController::getInstance()->pause();
+        CProducer::getInstance()->pause();
     }
 
     void CEngine::cancel() {
-        CVController::getInstance()->cancel();
-
-        CAController::getInstance()->cancel();
+        CProducer::getInstance()->stop();
     }
 
 

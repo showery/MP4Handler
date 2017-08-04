@@ -1,7 +1,5 @@
 package cn.paomiantv.mediasdk;
 
-import java.util.ArrayList;
-
 /**
  * Created by John on 2017/7/20.
  */
@@ -14,12 +12,12 @@ public class PMEngine {
     }
 
     // 变量定义
-    static class Mp4v2HelperHolder {
+    static class PMEngineHolder {
         private final static PMEngine mInstance = new PMEngine();
     }
 
     public static PMEngine getInstance() {
-        return Mp4v2HelperHolder.mInstance;
+        return PMEngineHolder.mInstance;
     }
 
     public boolean init() {
@@ -36,6 +34,9 @@ public class PMEngine {
     public void pausePreview() {
         _pausePreview();
     }
+    public void resumePreview() {
+        _resumePreview();
+    }
     public void stopPreview() {
         _stopPreview();
     }
@@ -46,7 +47,9 @@ public class PMEngine {
     public void pause() {
         _pause();
     }
-
+    public void resume() {
+        _resume();
+    }
     public void cancel() {
         _cancel();
     }
@@ -63,9 +66,11 @@ public class PMEngine {
     private native void _uninit();
     private native void _startPreview(PMStoryboard storyboard);
     private native void _pausePreview();
+    private native void _resumePreview();
     private native void _stopPreview();
     private native void _progress(PMStoryboard storyboard);
     private native void _pause();
+    private native void _resume();
     private native void _cancel();
     // member accessed by native methods.
     private int mNativeEngineAddress;

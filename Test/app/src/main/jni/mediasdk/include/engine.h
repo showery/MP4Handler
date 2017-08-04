@@ -36,7 +36,7 @@ namespace paomiantv{
         BOOL32 init();
         void uninit();
 
-        void process(CStoryboard *pStoryboard);
+        void produce(CStoryboard *pStoryboard);
         void pause();
         void cancel();
 

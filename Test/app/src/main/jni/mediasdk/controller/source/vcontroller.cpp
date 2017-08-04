@@ -13,24 +13,23 @@
  * 2017-07-20  v1.0        huangxuefeng  created
  ******************************************************************************/
 #include "vcontroller.h"
-
+#include "vprocessor.h"
 namespace paomiantv {
 
-    CVController::Garbo CVController::garbo; // 一定要初始化，不然程序结束时不会析构garbo
-
-    CVController *CVController::m_pInstance = NULL;
-
-    CVController *CVController::getInstance() {
-        if (m_pInstance == NULL)
-            m_pInstance = new CVController();
-        return m_pInstance;
-    }
-
-    CVController::CVController(){
-
+    CVController::CVController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE){
+        USE_LOG;
+        m_pProcessor = new CVProcessor;
     }
 
     CVController::~CVController() {
+        USE_LOG;
+        if(m_pProcessor!=NULL){
+            delete m_pProcessor;
+        }
+    }
+
+    void CVController::start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview) {
+
     }
 
     BOOL32 CVController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {

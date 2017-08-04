@@ -16,10 +16,15 @@
 #ifndef _PAOMIANTV_VPROCESSOR_H_
 #define _PAOMIANTV_VPROCESSOR_H_
 
+#include "processor.h"
 
-class vprocessor {
+namespace paomiantv {
+    class CVProcessor : public CProcessor {
+    public:
+        CVProcessor();
 
-};
-
+        ~CVProcessor();
+    };
+}
 
 #endif //_PAOMIANTV_VPROCESSOR_H_

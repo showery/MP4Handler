@@ -85,6 +85,10 @@
         "string": "cpp",
         "vector": "cpp",
         "type_traits": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "__tree": "cpp",
+        "atomic": "cpp",
+        "map": "cpp",
+        "set": "cpp"
     }
 }

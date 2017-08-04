@@ -35,7 +35,12 @@ CFilter::~CFilter()
 }
 void CFilter::init(s8* pchSrc, s64 sllStart, s64 sllDurantion)
 {
-    strncpy(m_pchSrcPath,pchSrc,MAX_LEN_FILE_PATH);
+    if (pchSrc != NULL && strlen(pchSrc))
+    {
+        strncpy(m_pchSrcPath, pchSrc, MAX_LEN_FILE_PATH);
+    }else{
+        memset(m_pchSrcPath,0,MAX_LEN_FILE_PATH);
+    }
     m_sllStart = sllStart;
     m_sllDuration = sllDurantion;
 }
@@ -45,8 +50,12 @@ void CFilter::uninit()
 }
 
 void CFilter::setSrc(s8 *pchSrc)
-{
-    strncpy(m_pchSrcPath, pchSrc, MAX_LEN_FILE_PATH);
+{if (pchSrc != NULL && strlen(pchSrc))
+    {
+        strncpy(m_pchSrcPath, pchSrc, MAX_LEN_FILE_PATH);
+    }else{
+        memset(m_pchSrcPath,0,MAX_LEN_FILE_PATH);
+    }
 }
 
 void CFilter::setStart(s64 sllStart)

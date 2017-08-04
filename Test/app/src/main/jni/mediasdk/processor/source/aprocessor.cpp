@@ -1,6 +1,6 @@
 /*******************************************************************************
  *        Module: paomiantv
- *          File: vprocessor.cpp
+ *          File: aprocessor.cpp
  * Functionality: handle video data.
  *       Related:
  *        System: android
@@ -13,4 +13,12 @@
  * 2017-08-03  v1.0        huangxuefeng  created
  ******************************************************************************/
 
-#include "vprocessor.h"
+#include "aprocessor.h"
+namespace paomiantv{
+    CAProcessor::CAProcessor() {
+    }
+
+    CAProcessor::~CAProcessor() {
+
+    }
+}

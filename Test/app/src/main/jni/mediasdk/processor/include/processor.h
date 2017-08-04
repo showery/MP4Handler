@@ -16,10 +16,32 @@
 #ifndef _PAOMIANTV_PROCESSOR_H
 #define _PAOMIANTV_PROCESSOR_H
 
+#include "typedef.h"
+#include "autolock.h"
 
-class CProcessor {
+namespace paomiantv {
 
-};
+    class CProcessor {
+    public:
+        CProcessor() {
+            m_pLock = new CLock;
+        };
 
+        virtual  ~CProcessor() {
+            delete m_pLock;
+            m_pLock = NULL;
+        };
+
+    protected:
+        ILock *m_pLock;
+        BOOL32 m_bIsFinished;
+    public:
+        inline BOOL32 isFinished();
+    };
+
+    inline BOOL32 CProcessor::isFinished() {
+        return m_bIsFinished;
+    }
+}
 
 #endif //_PAOMIANTV_PROCESSOR_H

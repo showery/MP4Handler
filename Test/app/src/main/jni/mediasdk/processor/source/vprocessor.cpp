@@ -1,7 +1,7 @@
 /*******************************************************************************
  *        Module: paomiantv
- *          File:
- * Functionality: audio process
+ *          File: vprocessor.cpp
+ * Functionality: handle video data.
  *       Related:
  *        System: android
  *      Language: C++
@@ -13,20 +13,13 @@
  * 2017-08-03  v1.0        huangxuefeng  created
  ******************************************************************************/
 
-#ifndef _PAOMIANTV_APROCESSOR_H_
-#define _PAOMIANTV_APROCESSOR_H_
+#include "vprocessor.h"
+namespace paomiantv{
+    CVProcessor::CVProcessor() {
 
+    }
 
-#include <typedef.h>
+    CVProcessor::~CVProcessor() {
 
-class CAprocessor {
-public:
-    CAprocessor();
-    ~CAprocessor();
-private:
-    BOOL32  m_bIsFinished;
-
-};
-
-
-#endif //_PAOMIANTV_APROCESSOR_H_
+    }
+}
