@@ -72,6 +72,14 @@ class CStoryboard
     void bindEvent(FailedCB cbOnFailed, SuccessCB cbOnSuccess, ProgressCB cbOnProgress,
                    AlwaysCB cbOnAlways, void *cdDelegate);
 
+    void handleFailed(s32 nErr, s8 *pchDescription);
+
+    void handleSuccess();
+
+    void handleProgress(s32 nPorgress);
+
+    void handleAlways();         
+
   private:
     //BGM
     TClipParam *m_ptBGMClipParam;

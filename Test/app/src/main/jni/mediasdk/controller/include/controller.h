@@ -41,6 +41,7 @@ class CController
     ILock *m_pLock;
     CThread *m_pThread;
 
+    BOOL32 m_bIsStarted;
     BOOL32 m_bIsStoped;
     BOOL32 m_bIsPaused;
 

@@ -16,6 +16,7 @@
 #include "acontroller.h"
 #include "aprocessor.h"
 #include "clipparser.h"
+
 namespace paomiantv
 {
 CAController::CAController(CStoryboard *pStoryboard, BOOL32 bIsSave)
@@ -37,8 +38,9 @@ CAController::~CAController()
 
 int CAController::run()
 {
-
+    BEGIN_AUTOLOCK(m_pLock);
     LOGI("audio controller is started");
+    m_bIsStarted = TRUE;
     s32 nClipNum = m_pStoryboard->getClipCount();
     s32 nSampleNum = 0;
     for (s32 i = 0; i < nClipNum; i++)
@@ -46,14 +48,15 @@ int CAController::run()
         nSampleNum += m_pStoryboard->getClip(i)->getParser()->getASampleNum();
     }
     s32 nCount = 0;
-    BEGIN_AUTOLOCK(m_pLock);
-    while (nCount >= nSampleNum && !m_bIsStoped)
-    {
-        for (s32 i = 0; i < nClipNum; i++)
-        {
-            s32 nClipSampleNum = m_pStoryboard->getClip(i)->getParser()->getASampleNum();
 
-            while (nClipSampleNum > 0 && !m_bIsStoped)
+    while (nCount < nSampleNum && !m_bIsStoped)
+    {
+        s32 nClipIndex = 0;
+        while (nClipIndex < nClipNum && !m_bIsStoped)
+        {
+            s32 nClipSampleNum = m_pStoryboard->getClip(nClipIndex)->getParser()->getASampleNum();
+            s32 nClipSamlpeIndex = 1;
+            while (nClipSamlpeIndex <= nClipSampleNum && !m_bIsStoped)
             {
                 if (m_bIsPaused)
                 {
@@ -66,44 +69,80 @@ int CAController::run()
 
                 if (m_bIsSave)
                 {
-                    //encode  
+                    //encode
                 }
                 else
                 {
                     //render
                 }
                 nCount++;
-                nClipSampleNum--;
+                nClipSamlpeIndex++;
+                m_pStoryboard->handleProgress(0);
             }
+            nClipIndex++;
         }
     }
-    END_AUTOLOCK;
+    m_bIsStarted = FALSE;
+    if (m_bIsSave)
+    {
+        m_pStoryboard->handleAlways();
+    }
     LOGI("audio controller is stopped");
+    END_AUTOLOCK;
     return 0;
 }
 
 void CAController::start(BOOL32 bIsSave)
 {
-    
+    BEGIN_AUTOLOCK(m_pLock);
+    if (m_bIsStarted)
+    {
+        return;
+    }
+
+    m_pThread->start();
+
+    m_bIsStoped = FALSE;
+
+    END_AUTOLOCK;
 }
 
 void CAController::stop()
 {
-
+    BEGIN_AUTOLOCK(m_pLock);
+    if (m_bIsStarted && !m_bIsStoped)
+    {
+        m_bIsStoped = TRUE;
+        m_pLock->acttive();
+    }
+    END_AUTOLOCK;
+    m_pThread->join();
 }
 
 void CAController::resume()
 {
-
+    BEGIN_AUTOLOCK(m_pLock);
+    if (m_bIsStarted && !m_bIsStoped && m_bIsPaused)
+    {
+        m_bIsPaused = FALSE;
+        m_pLock->acttive();
+    }
+    END_AUTOLOCK;
 }
 
 void CAController::pause()
 {
+    BEGIN_AUTOLOCK(m_pLock);
+    if (m_bIsStarted && !m_bIsStoped && !m_bIsPaused)
+    {
+        m_bIsPaused = TRUE;
+    }
 
+    END_AUTOLOCK;
 }
 
-void CAController::seekTo(s64 sllPosition){
-
+void CAController::seekTo(s64 sllPosition)
+{
 }
 
 BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam)
