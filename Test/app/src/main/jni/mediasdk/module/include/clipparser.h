@@ -37,26 +37,24 @@ class CClipParser
 
     void save(s8 *pchFilePath);
 
-    void
+    BOOL
     getVidoeSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                        u64 &renderoffset,
                        BOOL &isSync);
 
-    void
+    BOOL
     getVidoeSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                          u64 &renderoffset,
                          BOOL &isSync);
 
-    void
+    BOOL
     getAudioSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                        u64 &renderoffset,
                        BOOL &isSync);
 
-    void
+    BOOL
     getAudioSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                          u64 &renderoffset, BOOL &isSync);
-
-    inline CClip *getClip();
 
     inline u32 getVSampleStartId();
     inline u32 getVSampleEndId();
@@ -96,12 +94,9 @@ class CClipParser
   private:
     void initTrackId(const MP4TrackId uVTrackId, const u32 uSamplesNum, MP4SampleId &uVStartId, MP4SampleId &uVEndId);
     void copyTrack(MP4TrackId trackId, MP4FileHandle pDstHandle, s64 startTime, s64 duration);
-};
+    void reset();
 
-inline CClip *CClipParser::getClip()
-{
-    return m_pClip;
-}
+};
 inline u32 CClipParser::getVSampleStartId()
 {
     return m_uVStartId;

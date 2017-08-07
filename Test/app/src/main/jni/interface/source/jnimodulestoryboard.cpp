@@ -55,6 +55,7 @@ namespace paomiantv {
                         {"_uninit",         "()Z",                                 (void *) jni_uninit},
                         {"_setBGM",         "(Ljava/lang/String;JJJJ)Z",           (void *) jni_setBGM},
                         {"_addClip",        "(Lcn/paomiantv/mediasdk/PMClip;)Z",   (void *) jni_addClip},
+                        {"_replaceClip",    "(ILcn/paomiantv/mediasdk/PMClip;)Z",  (void *) jni_replaceClip},
                         {"_insertClip",     "(ILcn/paomiantv/mediasdk/PMClip;)Z",  (void *) jni_insertClip},
                         {"_removeClip",     "(I)Lcn/paomiantv/mediasdk/PMClip",    (void *) jni_removeClip},
                         {"_getClip",        "(I)Lcn/paomiantv/mediasdk/PMClip;",   (void *) jni_getClip},
@@ -73,7 +74,7 @@ namespace paomiantv {
     CJNIModuleStoryboard::CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard, jclass jcls,
                                                jfieldID jfld) {
         USE_LOG;
-        m_sJNIClips.clear();
+        m_vJNIClips.clear();
         if (env == NULL || jStoryboard == NULL || jcls == NULL || jfld == NULL) {
             LOGE("invalid parameters");
             return;
@@ -138,18 +139,18 @@ namespace paomiantv {
             m_jObject = NULL;
         }
         m_jfldNativeAddr = NULL;
-        m_jvm=NULL;
+        m_jvm = NULL;
         memset(m_ajmtd, 0, sizeof(m_ajmtd));
-        std::set<CJNIModuleClip *>::iterator iter = m_sJNIClips.begin();
+        std::vector<CJNIModuleClip *>::iterator iter = m_vJNIClips.begin();
 
-        while (iter != m_sJNIClips.end()) {
+        while (iter != m_vJNIClips.end()) {
             if (*iter != NULL) {
                 CJNIModuleClip *pJNIClip = *iter;
                 CJNIModuleClip::DestroyJniClip(pJNIClip);
             }
             ++iter;
         }
-        m_sJNIClips.clear();
+        m_vJNIClips.clear();
         // be sure unregister before killing
         CJNIModuleManager::getInstance()->remove(this);
     }
@@ -278,7 +279,7 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::CreateJniStoryboard(env,
                                                                                          jstoryboard);
-        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard()==NULL) {
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return FALSE;
         }
         s8 achDstPath[MAX_LEN_FILE_PATH] = {0};
@@ -309,7 +310,7 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL|| pJNIStoryboard->getCStoryboard()==NULL) {
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return FALSE;
         }
         s8 achBGMPath[MAX_LEN_FILE_PATH] = {0};
@@ -326,14 +327,29 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL) {
+        if (pJNIStoryboard == NULL||pJNIStoryboard->getCStoryboard()==NULL) {
             return FALSE;
         }
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL||pJNIClip->getCClip()==NULL) {
             return FALSE;
         }
         return pJNIStoryboard->addClip(pJNIClip);
+    }
+
+    jboolean CJNIModuleStoryboard::jni_replaceClip(JNIEnv *env, jobject jstoryboard, jint jindex,
+                                                   jobject jclip) {
+        USE_LOG;
+        CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
+                                                                                      jstoryboard);
+        if (pJNIStoryboard == NULL||pJNIStoryboard->getCStoryboard()==NULL) {
+            return FALSE;
+        }
+        CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
+        if (pJNIClip == NULL||pJNIClip->getCClip()==NULL) {
+            return FALSE;
+        }
+        return pJNIStoryboard->replaceClip(jindex, pJNIClip);
     }
 
     jboolean
@@ -342,11 +358,11 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL) {
+        if (pJNIStoryboard == NULL||pJNIStoryboard->getCStoryboard()==NULL) {
             return FALSE;
         }
         CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL||pJNIClip->getCClip()==NULL) {
             return FALSE;
         }
         return pJNIStoryboard->insertClip(jindex, pJNIClip);
@@ -356,25 +372,22 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL) {
+        if (pJNIStoryboard == NULL||pJNIStoryboard->getCStoryboard()==NULL) {
             return NULL;
         }
-        CJNIModuleClip *pJNIClip = pJNIStoryboard->removeClip(jindex);
-        if (pJNIClip == NULL) {
-            return NULL;
-        }
-        return pJNIClip->getObject();
+
+        return pJNIStoryboard->removeClip(jindex);
     }
 
     jobject CJNIModuleStoryboard::jni_getClip(JNIEnv *env, jobject jstoryboard, jint jindex) {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL) {
+        if (pJNIStoryboard == NULL||pJNIStoryboard->getCStoryboard()==NULL) {
             return NULL;
         }
         CJNIModuleClip *pJNIClip = pJNIStoryboard->getClip(jindex);
-        if (pJNIClip == NULL) {
+        if (pJNIClip == NULL|| pJNIClip->getCClip()==NULL) {
             return NULL;
         }
         return pJNIClip->getObject();
@@ -386,7 +399,7 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL|| pJNIStoryboard->getCStoryboard()==NULL) {
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return FALSE;
         }
         return pJNIStoryboard->getCStoryboard()->swapClip(jindexA, jindexB);
@@ -396,21 +409,22 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL|| pJNIStoryboard->getCStoryboard()==NULL) {
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return 0;
         }
         return pJNIStoryboard->getCStoryboard()->getClipCount();
     }
 
-    jboolean CJNIModuleStoryboard::jni_attachRenderer(JNIEnv *env, jobject jstoryboard,jobject jrenderer) {
+    jboolean
+    CJNIModuleStoryboard::jni_attachRenderer(JNIEnv *env, jobject jstoryboard, jobject jrenderer) {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL|| pJNIStoryboard->getCStoryboard()==NULL) {
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return FALSE;
         }
-        CJNIModuleRenderer *pJNIRenderer = CJNIModuleRenderer::GetJniRenderer(env,jrenderer);
-        if(pJNIRenderer==NULL){
+        CJNIModuleRenderer *pJNIRenderer = CJNIModuleRenderer::GetJniRenderer(env, jrenderer);
+        if (pJNIRenderer == NULL) {
             return FALSE;
         }
         pJNIStoryboard->getCStoryboard()->attachRenderer(pJNIRenderer->getRenderer());
@@ -421,43 +435,55 @@ namespace paomiantv {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
-        if (pJNIStoryboard == NULL|| pJNIStoryboard->getCStoryboard()==NULL) {
-            return ;
+        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
+            return;
         }
         pJNIStoryboard->getCStoryboard()->detachRenderer();
-        return ;
+        return;
     }
 
     BOOL32 CJNIModuleStoryboard::addClip(CJNIModuleClip *clip) {
-        if(m_pStoryboard==NULL){
+        if (m_pStoryboard == NULL) {
             return FALSE;
         }
-        m_sJNIClips.insert(clip);
+        m_vJNIClips.push_back(clip);
         return m_pStoryboard->addClip(clip->getCClip());
     }
 
-    BOOL32 CJNIModuleStoryboard::insertClip(s32 nIndex, CJNIModuleClip *clip) {
-        if(m_pStoryboard==NULL){
+    BOOL32 CJNIModuleStoryboard::replaceClip(s32 nIndex, CJNIModuleClip *clip) {
+        if (m_pStoryboard == NULL) {
             return FALSE;
         }
-        m_sJNIClips.insert(clip);
+        CJNIModuleClip *pClip = m_vJNIClips[nIndex];
+        m_vJNIClips[nIndex] = clip;
+        CJNIModuleClip::DestroyJniClip(pClip);
+        return m_pStoryboard->replaceClip(nIndex, clip->getCClip());
+    }
+
+    BOOL32 CJNIModuleStoryboard::insertClip(s32 nIndex, CJNIModuleClip *clip) {
+        if (m_pStoryboard == NULL) {
+            return FALSE;
+        }
+        m_vJNIClips.insert(m_vJNIClips.begin() + nIndex, clip);
         return m_pStoryboard->insertClip(nIndex, clip->getCClip());
     }
 
-    CJNIModuleClip *CJNIModuleStoryboard::removeClip(s32 nIndex) {
-        if(m_pStoryboard==NULL){
+    jobject CJNIModuleStoryboard::removeClip(s32 nIndex) {
+        if (m_pStoryboard == NULL) {
             return NULL;
         }
         CClip *pClip = m_pStoryboard->removeClip(nIndex);
         if (pClip == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleClip *>::iterator iter;
-        for (iter = m_sJNIClips.begin(); iter != m_sJNIClips.end();) {
+        std::vector<CJNIModuleClip *>::iterator iter;
+        for (iter = m_vJNIClips.begin(); iter != m_vJNIClips.end();) {
             if (*iter != NULL && (*iter)->getCClip() == pClip) {
                 CJNIModuleClip *pJNIClip = *iter;
-                m_sJNIClips.erase(iter);
-                return pJNIClip;
+                m_vJNIClips.erase(iter);
+                jobject jobj = pJNIClip->getObject();
+                CJNIModuleClip::DestroyJniClip(pJNIClip);
+                return jobj;
             }
             ++iter;
         }
@@ -465,15 +491,15 @@ namespace paomiantv {
     }
 
     CJNIModuleClip *CJNIModuleStoryboard::getClip(s32 nIndex) {
-        if(m_pStoryboard==NULL){
+        if (m_pStoryboard == NULL) {
             return NULL;
         }
         CClip *pClip = m_pStoryboard->getClip(nIndex);
         if (pClip == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleClip *>::iterator iter;
-        for (iter = m_sJNIClips.begin(); iter != m_sJNIClips.end();) {
+        std::vector<CJNIModuleClip *>::iterator iter;
+        for (iter = m_vJNIClips.begin(); iter != m_vJNIClips.end();) {
             if (*iter != NULL && (*iter)->getCClip() == pClip) {
                 return *iter;
             }

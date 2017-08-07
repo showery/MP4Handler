@@ -16,141 +16,112 @@
 #include "acontroller.h"
 #include "aprocessor.h"
 #include "clipparser.h"
+#include "constant.h"
 
-namespace paomiantv
-{
-CAController::CAController(CStoryboard *pStoryboard, BOOL32 bIsSave)
-    : CController(pStoryboard, bIsSave)
-{
-    USE_LOG;
-    m_pProcessor = new CAProcessor;
-}
-
-CAController::~CAController()
-{
-    USE_LOG;
-    if (m_pProcessor != NULL)
-    {
-        delete m_pProcessor;
-        m_pProcessor = NULL;
+namespace paomiantv {
+    CAController::CAController(CStoryboard *pStoryboard, BOOL32 bIsSave)
+            : CController(pStoryboard, bIsSave) {
+        USE_LOG;
+        m_pProcessor = new CAProcessor;
+        m_pbyABuf = (u8 *) malloc(MAX_AUDIO_FRAME_BUFFER_SIZE);
     }
-}
 
-int CAController::run()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    LOGI("audio controller is started");
-    m_bIsStarted = TRUE;
-    s32 nClipNum = m_pStoryboard->getClipCount();
-    s32 nSampleNum = 0;
-    for (s32 i = 0; i < nClipNum; i++)
-    {
-        nSampleNum += m_pStoryboard->getClip(i)->getParser()->getASampleNum();
+    CAController::~CAController() {
+        USE_LOG;
+        if (m_pProcessor != NULL) {
+            delete m_pProcessor;
+            m_pProcessor = NULL;
+        }
+        if (m_pbyABuf != NULL) {
+            free(m_pbyABuf);
+            m_pbyABuf = NULL;
+        }
     }
-    s32 nCount = 0;
 
-    while (nCount < nSampleNum && !m_bIsStoped)
-    {
-        s32 nClipIndex = 0;
-        while (nClipIndex < nClipNum && !m_bIsStoped)
-        {
-            s32 nClipSampleNum = m_pStoryboard->getClip(nClipIndex)->getParser()->getASampleNum();
-            s32 nClipSamlpeIndex = 1;
-            while (nClipSamlpeIndex <= nClipSampleNum && !m_bIsStoped)
-            {
-                if (m_bIsPaused)
-                {
-                    m_pLock->wait();
-                }
-
+    int CAController::run() {
+        m_pLock->lock();
+        LOGI("audio controller is started");
+        m_bIsStarted = TRUE;
+        while (!m_bIsStopped) {
+            while (!m_bIsStopped && m_bIsPaused) {
+                m_pLock->wait();
+            }
+            if (!m_bIsStopped) {
+                m_pLock->unlock();
+                BOOL32 bIsLastSample = FALSE;
+                BOOL bIsSync = FALSE;
+                u32 uSize = 0;
+                u64 ullStartTm = 0;
+                u64 ullDuration = 0;
+                u64 ullRenderOffset = 0;
+                m_pStoryboard->getNextASpample(bIsLastSample, m_pbyABuf, uSize, ullStartTm,
+                                               ullDuration, ullRenderOffset, bIsSync);
                 //decode
 
                 //transform
 
-                if (m_bIsSave)
-                {
+                if (m_bIsSave) {
                     //encode
-                }
-                else
-                {
+                } else {
                     //render
                 }
-                nCount++;
-                nClipSamlpeIndex++;
-                m_pStoryboard->handleProgress(0);
+                m_pLock->lock();
             }
-            nClipIndex++;
         }
+        m_bIsStarted = FALSE;
+        LOGI("audio controller is stopped");
+        m_pLock->unlock();
+        return 0;
     }
-    m_bIsStarted = FALSE;
-    if (m_bIsSave)
-    {
-        m_pStoryboard->handleAlways();
-    }
-    LOGI("audio controller is stopped");
-    END_AUTOLOCK;
-    return 0;
-}
+/*
+    void CAController::start(BOOL32 bIsSave) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted) {
+                return;
+            }
+            m_pThread->start();
+            m_bIsSave = bIsSave;
+            m_bIsStopped = FALSE;
 
-void CAController::start(BOOL32 bIsSave)
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted)
-    {
-        return;
-    }
-
-    m_pThread->start();
-
-    m_bIsStoped = FALSE;
-
-    END_AUTOLOCK;
-}
-
-void CAController::stop()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted && !m_bIsStoped)
-    {
-        m_bIsStoped = TRUE;
-        m_pLock->acttive();
-    }
-    END_AUTOLOCK;
-    m_pThread->join();
-}
-
-void CAController::resume()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted && !m_bIsStoped && m_bIsPaused)
-    {
-        m_bIsPaused = FALSE;
-        m_pLock->acttive();
-    }
-    END_AUTOLOCK;
-}
-
-void CAController::pause()
-{
-    BEGIN_AUTOLOCK(m_pLock);
-    if (m_bIsStarted && !m_bIsStoped && !m_bIsPaused)
-    {
-        m_bIsPaused = TRUE;
+        END_AUTOLOCK;
     }
 
-    END_AUTOLOCK;
-}
+    void CAController::stop() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped) {
+                m_bIsStopped = TRUE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+        m_pThread->join();
+    }
 
-void CAController::seekTo(s64 sllPosition)
-{
-}
+    void CAController::resume() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && m_bIsPaused) {
+                m_bIsPaused = FALSE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+    }
 
-BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam)
-{
-    return TRUE;
-}
+    void CAController::pause() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && !m_bIsPaused) {
+                m_bIsPaused = TRUE;
+            }
 
-void CAController::handle(CStoryboard *pStoryboard)
-{
-}
+        END_AUTOLOCK;
+    }
+
+    void CAController::seekTo(s32 nClipIndex) {
+        m_pStoryboard->seekTo(nClipIndex);
+    }
+*/
+    BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {
+        return TRUE;
+    }
+
+    void CAController::handle(CStoryboard *pStoryboard) {
+    }
 }

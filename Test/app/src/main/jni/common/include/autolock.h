@@ -29,14 +29,9 @@ namespace paomiantv
     {                               \
         CAutoLockTrace cAutoLock((pLock), __FILE__, __FUNCTION__, __LINE__);
 
-#define BEGIN_AUTOLOCK(pLock) \
-    do                        \
-    {                         \
-        CAutoLock cAutoLock((pLock))
+#define BEGIN_AUTOLOCK(pLock) { CAutoLock cAutoLock((pLock))
 
-#define END_AUTOLOCK \
-    }                \
-    while (0)
+#define END_AUTOLOCK }
 
 class ILock
 {

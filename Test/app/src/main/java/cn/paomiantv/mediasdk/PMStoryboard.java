@@ -34,6 +34,11 @@ public class PMStoryboard {
 
     }
 
+    public boolean replaceClip(int position, PMClip clip) {
+        return _replaceClip(position, clip);
+
+    }
+
     public boolean insertClip(int position, PMClip clip) {
         return _intertClip(position, clip);
 
@@ -145,6 +150,8 @@ public class PMStoryboard {
     private native boolean _setBGM(String srcPath, long startCutTm, long durationCutTm, long startTm, long endTm);
 
     private native boolean _addClip(PMClip clip);
+
+    private native boolean _replaceClip(int position, PMClip clip);
 
     private native boolean _intertClip(int position, PMClip clip);
 

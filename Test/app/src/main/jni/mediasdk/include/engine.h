@@ -49,7 +49,7 @@ namespace paomiantv {
 
         void setDataSource(CStoryboard *pStoryboard);
 
-        void seekTo(s64 sllPosition);
+        void seekTo(s32 sllPosition);
 
 
 

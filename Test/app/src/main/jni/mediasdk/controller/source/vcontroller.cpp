@@ -14,91 +14,113 @@
  ******************************************************************************/
 #include "vcontroller.h"
 #include "vprocessor.h"
-namespace paomiantv
-{
+#include "constant.h"
 
-CVController::CVController(CStoryboard *pStoryboard, BOOL32 bIsSave)
-    : CController(pStoryboard, bIsSave)
-{
-    USE_LOG;
-    m_pProcessor = new CVProcessor;
-}
+namespace paomiantv {
 
-CVController::~CVController()
-{
-    USE_LOG;
-    if (m_pProcessor != NULL)
-    {
-        delete m_pProcessor;
+    CVController::CVController(CStoryboard *pStoryboard, BOOL32 bIsSave)
+            : CController(pStoryboard, bIsSave) {
+        USE_LOG;
+        m_pProcessor = new CVProcessor;
+        m_pbyVBuf = (u8 *) malloc(MAX_VIDEO_FRAME_BUFFER_SIZE);
     }
-}
 
-int CVController::run()
-{
-    LOGI("video controller is started");
-    s32 nClipNum = m_pStoryboard->getClipCount();
-    s32 nSampleNum = 0;
-    for (s32 i = 0; i < nClipNum; i++)
-    {
-        nSampleNum += m_pStoryboard->getClip(i)->getParser()->getVSampleNum();
+    CVController::~CVController() {
+        USE_LOG;
+        if (m_pProcessor != NULL) {
+            delete m_pProcessor;
+            m_pProcessor = NULL;
+        }
+        if (m_pbyVBuf != NULL) {
+            free(m_pbyVBuf);
+            m_pbyVBuf = NULL;
+        }
     }
-    s32 nCount = 0;
-    while (nCount >= nSampleNum && !m_bIsStoped)
-    {
-        for (s32 i = 0; i < nClipNum; i++)
-        {
-            s32 nClipSampleNum = m_pStoryboard->getClip(i)->getParser()->getVSampleNum();
 
-            while (nClipSampleNum > 0 && !m_bIsStoped)
-            {
-
+    int CVController::run() {
+        m_pLock->lock();
+        LOGI("video controller is started");
+        m_bIsStarted = TRUE;
+        while (!m_bIsStopped) {
+            while (!m_bIsStopped && m_bIsPaused) {
+                m_pLock->wait();
+            }
+            if (!m_bIsStopped) {
+                m_pLock->unlock();
+                BOOL32 bIsLastSample = FALSE;
+                BOOL bIsSync = FALSE;
+                u32 uSize = 0;
+                u64 ullStartTm = 0;
+                u64 ullDuration = 0;
+                u64 ullRenderOffset = 0;
+                m_pStoryboard->getNextVSpample(bIsLastSample, m_pbyVBuf, uSize, ullStartTm,
+                                               ullDuration, ullRenderOffset, bIsSync);
                 //decode
 
                 //transform
 
-                if (m_bIsSave)
-                {
-                    //encode  
-                }
-                else
-                {
+                if (m_bIsSave) {
+                    //encode
+                } else {
                     //render
                 }
-                nCount++;
-                nClipSampleNum--;
+                m_pLock->lock();
             }
         }
+        m_bIsStarted = FALSE;
+        LOGI("video controller is stopped");
+        m_pLock->unlock();
+        return 0;
     }
-    LOGI("video controller is stopped");
-    return 0;
-}
+/*
+    void CVController::start(BOOL32 bIsSave) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted) {
+                return;
+            }
+            m_pThread->start();
+            m_bIsSave = bIsSave;
+            m_bIsStopped = FALSE;
 
-void CVController::start(BOOL32 bIsSave)
-{
-}
+        END_AUTOLOCK;
+    }
 
-void CVController::stop()
-{
-}
+    void CVController::stop() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped) {
+                m_bIsStopped = TRUE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+        m_pThread->join();
+    }
 
-void CVController::resume()
-{
-}
+    void CVController::resume() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && m_bIsPaused) {
+                m_bIsPaused = FALSE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+    }
 
-void CVController::pause()
-{
-}
+    void CVController::pause() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && !m_bIsPaused) {
+                m_bIsPaused = TRUE;
+            }
 
-void CVController::seekTo(s64 sllPosition){
+        END_AUTOLOCK;
+    }
 
-}
+    void CVController::seekTo(s32 nClipIndex) {
+        m_pStoryboard->seekTo(nClipIndex);
+    }
+*/
+    BOOL32 CVController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {
+        return TRUE;
+    }
 
-BOOL32 CVController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam)
-{
-    return TRUE;
-}
-
-void CVController::handle(CStoryboard *pStoryboard)
-{
-}
+    void CVController::handle(CStoryboard *pStoryboard) {
+    }
 }

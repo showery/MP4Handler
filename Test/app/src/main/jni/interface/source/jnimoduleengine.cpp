@@ -248,14 +248,14 @@ namespace paomiantv {
         pJNIEngine->getEngine()->setDataSource(pJNIStoryboard->getCStoryboard());
     }
 
-    void CJNIModuleEngine::jni_seekTo(JNIEnv *env, jobject jengine, jlong jposition) {
+    void CJNIModuleEngine::jni_seekTo(JNIEnv *env, jobject jengine, jint jclipIndex) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
             return;
         }
 
-        pJNIEngine->getEngine()->seekTo(jposition);
+        pJNIEngine->getEngine()->seekTo(jclipIndex);
     }
 
     void CJNIModuleEngine::jni_start(JNIEnv *env, jobject jengine, jboolean jisSave) {

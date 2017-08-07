@@ -34,20 +34,21 @@ class CAController : public CController
   public:
     CAController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-    ~CAController();
+    virtual ~CAController();
 
-    void start(BOOL32 bIsSave);
-
-    void stop();
-
-    void resume();
-
-    void pause();
-    
-    void seekTo(s64 sllPosition);
+//    void start(BOOL32 bIsSave);
+//
+//    void stop();
+//
+//    void resume();
+//
+//    void pause();
+//
+//    void seekTo(s32 nClipIndex);
 
   private:
     CAProcessor *m_pProcessor;
+    u8* m_pbyABuf;
 
   private:
     int run();

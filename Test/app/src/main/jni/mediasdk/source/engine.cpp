@@ -82,9 +82,9 @@ namespace paomiantv {
         }
     }
 
-    void CEngine::seekTo(s64 sllPosition) {
+    void CEngine::seekTo(s32 nClipIndex) {
         if (m_pStoryboard != NULL || m_pProducer != NULL) {
-            m_pProducer->seekTo(sllPosition);
+            m_pProducer->seekTo(nClipIndex);
         }
     }
 

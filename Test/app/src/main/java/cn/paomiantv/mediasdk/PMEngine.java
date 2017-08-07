@@ -1,12 +1,33 @@
 package cn.paomiantv.mediasdk;
 
+import android.os.Build;
+
 /**
  * Created by John on 2017/7/20.
  */
 
 public class PMEngine {
+
     static {
+        switch(Build.VERSION.SDK_INT)
+        {
+            case Build.VERSION_CODES.JELLY_BEAN:
+                System.loadLibrary("native_codec16");
+                break;
+            case Build.VERSION_CODES.JELLY_BEAN_MR1:
+                System.loadLibrary("native_codec17");
+                break;
+            case Build.VERSION_CODES.JELLY_BEAN_MR2:
+                System.loadLibrary("native_codec18");
+                break;
+            case Build.VERSION_CODES.KITKAT:
+                System.loadLibrary("native_codec19");
+                break;
+        }
         System.loadLibrary("mp4v2");
+        System.loadLibrary("render");
+        System.loadLibrary("mediasdk");
+        System.loadLibrary("interface");
     }
 
     private PMEngine() {
@@ -37,8 +58,8 @@ public class PMEngine {
         _start(isSave);
     }
 
-    public void seekTo(long position) {
-        _seekTo(position);
+    public void seekTo(int clipIndex) {
+        _seekTo(clipIndex);
     }
 
     public void pause() {
@@ -61,7 +82,7 @@ public class PMEngine {
 
     private native void _start(boolean isSave);
 
-    private native void _seekTo(long position);
+    private native void _seekTo(int clipIndex);
 
     private native void _pause();
 

@@ -24,41 +24,46 @@
 #include "storyboard.h"
 #include "controller.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CController
-{
-  protected:
-    CController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
-    virtual ~CController();
+    class CController {
+    public:
+        CController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-    virtual int run() = 0;
+        virtual ~CController();
 
-    BOOL32 m_bIsSave;
-    CStoryboard *m_pStoryboard;
+    protected:
+        virtual int run() = 0;
 
-    ILock *m_pLock;
-    CThread *m_pThread;
+        BOOL32 m_bIsSave;
+        CStoryboard *m_pStoryboard;
 
-    BOOL32 m_bIsStarted;
-    BOOL32 m_bIsStoped;
-    BOOL32 m_bIsPaused;
+        ILock *m_pLock;
+        CThread *m_pThread;
 
-  private:
-    static void *ThreadWrapper(void *pData);
+        BOOL32 m_bIsStarted;
+        BOOL32 m_bIsStopped;
+        BOOL32 m_bIsPaused;
 
-  public:
-    virtual void start(BOOL32 bIsSave) = 0;
+        //when preview mode, the clip position to preview started.default is 0
+        s32 m_nPreviewFromClipIndex;
+        //when preview mode, the clip position to preview ended. default is -1(meaning last index, reserved)
+        s32 m_nPreviewToClipIndex;
 
-    virtual void stop() = 0;
+    private:
+        static void *ThreadWrapper(void *pData);
 
-    virtual void resume() = 0;
+    public:
+        virtual void start(BOOL32 bIsSave);
 
-    virtual void pause() = 0;
+        virtual void stop();
 
-    virtual void seekTo(s64 sllPosition) = 0;
-};
+        virtual void resume();
+
+        virtual void pause();
+
+        virtual void seekTo(s32 nClipIndex);
+    };
 }
 
 #endif /* _PAOMIANTV_CONTROLLER_H_ */

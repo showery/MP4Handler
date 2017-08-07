@@ -34,20 +34,21 @@ class CVController : public CController
   public:
     CVController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-    ~CVController();
+    virtual ~CVController();
 
-    void start(BOOL32 bIsSave);
-
-    void stop();
-
-    void resume();
-
-    void pause();
-
-    void seekTo(s64 sllPosition);
+//    void start(BOOL32 bIsSave);
+//
+//    void stop();
+//
+//    void resume();
+//
+//    void pause();
+//
+//    void seekTo(s32 nClipIndex);
 
   private:
     CVProcessor *m_pProcessor;
+    u8* m_pbyVBuf;
 
   private:
     int run();

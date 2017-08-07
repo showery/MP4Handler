@@ -86,11 +86,11 @@ namespace paomiantv {
         END_AUTOLOCK;
     }
 
-    void CProducer::seekTo(s64 sllPosition) {
+    void CProducer::seekTo(s32 nClipIndex) {
         BEGIN_AUTOLOCK(m_pLock);
-            if (m_bIsSave) {
-                m_pAController->seekTo(sllPosition);
-                m_pVController->seekTo(sllPosition);
+            if (!m_bIsSave) {
+                m_pAController->seekTo(nClipIndex);
+                m_pVController->seekTo(nClipIndex);
             }
         END_AUTOLOCK;
     }

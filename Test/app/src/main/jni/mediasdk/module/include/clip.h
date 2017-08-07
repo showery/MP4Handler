@@ -27,6 +27,7 @@
 
 namespace paomiantv
 {
+
 class CClipParser;
 /*!
  * \brief    used in Clip.
@@ -44,7 +45,7 @@ typedef struct tagClipParam
     tagClipParam()
     {
         m_sllStart = 0;
-        m_sllDuration = -1;
+        m_sllDuration = 0;
     }
 } TClipParam;
 
@@ -153,6 +154,8 @@ class CClip
     std::vector<CTransition *> m_vTransitions;
     CClipParser *m_pParser;
     ILock *m_pLock;
+    ILock *m_pvFilterLock;
+    ILock *m_pvTransLock;
 
   public:
     void init(s8 *pchSrc, s64 sllStart, s64 sllDuration);
@@ -182,7 +185,36 @@ class CClip
     inline s64 getDuration();
     inline s32 getFilterCount();
     inline s32 getTransitionCount();
-    inline CClipParser *getParser();
+
+
+
+    BOOL
+    getVidoeSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                       u64 &renderoffset,
+                       BOOL &isSync);
+
+    BOOL
+    getVidoeSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                         u64 &renderoffset,
+                         BOOL &isSync);
+
+    BOOL
+    getAudioSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                       u64 &renderoffset,
+                       BOOL &isSync);
+
+    BOOL
+    getAudioSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                         u64 &renderoffset, BOOL &isSync);
+
+     u32 getVSampleStartId();
+     u32 getVSampleEndId();
+     u32 getVSampleNum();
+
+     u32 getASampleStartId();
+     u32 getASampleEndId();
+     u32 getASampleNum();
+    
 };
 
 inline s8 *CClip::getSrc()
@@ -206,11 +238,6 @@ inline s32 CClip::getFilterCount()
 inline s32 CClip::getTransitionCount()
 {
     return m_vTransitions.size();
-}
-
-inline CClipParser *CClip::getParser()
-{
-    return m_pParser;
 }
 
 } // namespace paomiantv

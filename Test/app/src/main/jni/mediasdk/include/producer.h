@@ -35,8 +35,8 @@ class CProducer
     BOOL32 m_bIsSave;
     CStoryboard *m_pStoryboard;
 
-    CVController* m_pVController;
-    CAController* m_pAController;
+    CController* m_pVController;
+    CController* m_pAController;
     ILock *m_pLock;
 
   public:
@@ -54,7 +54,7 @@ class CProducer
     inline BOOL32 isStarted();
     inline CStoryboard *getStoryboard();
 
-    void seekTo(long long int i);
+    void seekTo(s32 nClipIndex);
 };
 
 inline BOOL32 CProducer::isPaused()

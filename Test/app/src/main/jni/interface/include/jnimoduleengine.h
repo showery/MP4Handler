@@ -55,7 +55,7 @@ namespace paomiantv {
 
         static void jni_start(JNIEnv *env, jobject jengine, jboolean jisSave);
 
-        static void jni_seekTo(JNIEnv *env, jobject jengine, jlong jposition);
+        static void jni_seekTo(JNIEnv *env, jobject jengine, jint jclipIndex);
 
         static void jni_pause(JNIEnv *env, jobject jengine);
 

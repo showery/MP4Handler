@@ -42,7 +42,7 @@ namespace paomiantv {
               m_bStarted(FALSE),
               m_bStop(FALSE),
               m_bNewFrame(FALSE) {
-        m_tFrame.pbyData = (unsigned char*)malloc(MAX_FRAME_BUFFER_SIZE);
+        m_tFrame.pbyData = (unsigned char*)malloc(MAX_VIDEO_FRAME_BUFFER_SIZE);
         memset(&m_tFrame, 0, sizeof(m_tFrame));
         memset(m_fTranslate, 0, sizeof(m_fTranslate));
         memset(m_fScale, 0, sizeof(m_fScale));
