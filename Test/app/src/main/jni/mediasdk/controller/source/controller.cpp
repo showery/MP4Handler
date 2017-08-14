@@ -14,59 +14,90 @@
  ******************************************************************************/
 
 #include <typedef.h>
-#include "ctrlmanager.h"
+#include "controller.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-CController::CController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-    : m_bIsWithPreview(bIsWithPreview),
-      m_pStoryboard(pStoryboard)
-{
-    USE_LOG;
-    init();
-}
-
-CController::~CController()
-{
-    USE_LOG;
-    uninit();
-}
-
-void CController::init()
-{
-    m_pLock = new CLock;
-}
-
-void CController::uninit()
-{
-    if (m_pLock != NULL)
-    {
+    CController::CController(CStoryboard *pStoryboard, BOOL32 bIsSave)
+            : m_bIsSave(bIsSave),
+              m_pStoryboard(pStoryboard),
+              m_bIsStopped(FALSE),
+              m_bIsPaused(FALSE),
+              m_bIsStarted(FALSE),
+              m_nPreviewFromClipIndex(0),
+              m_nPreviewToClipIndex(-1) {
+        USE_LOG;
         m_pLock = new CLock;
+        m_pThread = new CThread(ThreadWrapper, this);
     }
-}
-void CController::start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-{
-    m_pVCtrl->start(pStoryboard, bIsWithPreview);
-    m_pACtrl->start(pStoryboard, bIsWithPreview);
-    m_bIsWithPreview = bIsWithPreview;
-}
 
-void CController::stop()
-{
-    m_pVCtrl->stop();
-    m_pACtrl->stop();
-}
+    CController::~CController() {
+        USE_LOG;
+        stop();
+        if (m_pThread != NULL) {
+            delete m_pThread;
+            m_pThread = NULL;
+        }
+        if (m_pLock != NULL) {
+            m_pLock = new CLock;
+            m_pLock = NULL;
+        }
 
-void CController::resume()
-{
-    m_pVCtrl->resume();
-    m_pACtrl->resume();
-}
+    }
 
-void CController::pause()
-{
-    m_pVCtrl->pause();
-    m_pACtrl->pause();
-}
+//static
+    void *CController::ThreadWrapper(void *pThis) {
+        CThread::SetName(typeid(*((CController *) pThis)).name());
+        return (void *) ((CController *) pThis)->run();
+    }
+
+    int CController::run() {
+        USE_LOG;
+    }
+
+
+    void CController::start(BOOL32 bIsSave) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted) {
+                return;
+            }
+            m_pThread->start();
+            m_bIsSave = bIsSave;
+            m_bIsStopped = FALSE;
+
+        END_AUTOLOCK;
+    }
+
+    void CController::stop() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped) {
+                m_bIsStopped = TRUE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+        m_pThread->join();
+    }
+
+    void CController::resume() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && m_bIsPaused) {
+                m_bIsPaused = FALSE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+    }
+
+    void CController::pause() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && !m_bIsPaused) {
+                m_bIsPaused = TRUE;
+            }
+
+        END_AUTOLOCK;
+    }
+
+    void CController::seekTo(s32 nClipIndex) {
+        m_pStoryboard->seekTo(nClipIndex);
+    }
+
 }

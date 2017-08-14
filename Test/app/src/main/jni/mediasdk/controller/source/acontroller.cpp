@@ -15,68 +15,102 @@
 
 #include "acontroller.h"
 #include "aprocessor.h"
-#include "clipparser.h"
-namespace paomiantv
-{
-CAController::CAController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE)
-{
-    USE_LOG;
-    m_pProcessor = new CAProcessor;
-}
+#include "constant.h"
+#include "frame.h"
 
-CAController::~CAController()
-{
-    USE_LOG;
-    if (m_pProcessor != NULL)
-    {
-        delete m_pProcessor;
+namespace paomiantv {
+    CAController::CAController(CStoryboard *pStoryboard, BOOL32 bIsSave)
+            : CController(pStoryboard, bIsSave) {
+        USE_LOG;
+        m_pProcessor = new CAProcessor;
     }
-}
 
-void CAController::start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview)
-{
-    m_bIsNeedPreview = bIsWithPreview;
-}
-
-BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam)
-{
-    return TRUE;
-}
-
-void CAController::handle(CStoryboard *pStoryboard)
-{
-    s32 nClipNum = pStoryboard->getClipCount();
-    s32 nSampleNum = 0;
-    for (s32 i = 0; i < nClipNum; i++)
-    {
-        nSampleNum += pStoryboard->getClip(i)->getParser()->getASampleNum();
-    }
-    s32 nCount = 0;
-    while (nCount >= nSampleNum)
-    {
-        for (s32 i = 0; i < nClipNum; i++)
-        {
-            s32 nClipSampleNum = pStoryboard->getClip(i)->getParser()->getASampleNum();
-
-            while (nClipSampleNum > 0)
-            {
-
-                //decode
-
-                //transform
-
-                if (m_bIsNeedPreview)
-                {
-                    //render
-                }
-                else
-                {
-                    //encode
-                }
-                nCount++;
-                nClipSampleNum--;
-            }
+    CAController::~CAController() {
+        USE_LOG;
+        if (m_pProcessor != NULL) {
+            delete m_pProcessor;
+            m_pProcessor = NULL;
         }
     }
-}
+
+    int CAController::run() {
+        m_pLock->lock();
+        LOGI("audio controller is started");
+        m_bIsStarted = TRUE;
+        while (!m_bIsStopped) {
+            while (!m_bIsStopped && m_bIsPaused) {
+                m_pLock->wait();
+            }
+            if (!m_bIsStopped) {
+                m_pLock->unlock();
+                TFrame* ptFrame = new TFrame;
+                m_pStoryboard->getNextASpample(ptFrame->isLast, ptFrame->data, ptFrame->size, ptFrame->startTm,
+                                               ptFrame->duration, ptFrame->renderOffset, ptFrame->isSync);
+                //decode
+                //transform
+
+                if (m_bIsSave) {
+                    //encode
+                } else {
+                    //render
+                }
+                m_pLock->lock();
+            }
+        }
+        m_bIsStarted = FALSE;
+        LOGI("audio controller is stopped");
+        m_pLock->unlock();
+        return 0;
+    }
+/*
+    void CAController::start(BOOL32 bIsSave) {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted) {
+                return;
+            }
+            m_pThread->start();
+            m_bIsSave = bIsSave;
+            m_bIsStopped = FALSE;
+
+        END_AUTOLOCK;
+    }
+
+    void CAController::stop() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped) {
+                m_bIsStopped = TRUE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+        m_pThread->join();
+    }
+
+    void CAController::resume() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && m_bIsPaused) {
+                m_bIsPaused = FALSE;
+                m_pLock->acttive();
+            }
+        END_AUTOLOCK;
+    }
+
+    void CAController::pause() {
+        BEGIN_AUTOLOCK(m_pLock);
+            if (m_bIsStarted && !m_bIsStopped && !m_bIsPaused) {
+                m_bIsPaused = TRUE;
+            }
+
+        END_AUTOLOCK;
+    }
+
+    void CAController::seekTo(s32 nClipIndex) {
+        m_pStoryboard->seekTo(nClipIndex);
+    }
+*/
+    BOOL32 CAController::transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam) {
+        return TRUE;
+    }
+
+    void CAController::handle(CStoryboard *pStoryboard) {
+    }
 }

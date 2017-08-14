@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include <sys/time.h>
+#include <typeinfo>
 #include "constant.h"
 #include "autolog.h"
 #include "autolock.h"
@@ -41,25 +42,29 @@ namespace paomiantv {
               m_bRedrawBkground(TRUE),
               m_bStarted(FALSE),
               m_bStop(FALSE),
-              m_bNewFrame(FALSE) {
-        m_tFrame.pbyData = (unsigned char*)malloc(MAX_FRAME_BUFFER_SIZE);
+              m_bNewFrame(FALSE),
+              m_cbDelegate(NULL),
+              m_cbOnNewFrame(NULL) {
+
         memset(&m_tFrame, 0, sizeof(m_tFrame));
         memset(m_fTranslate, 0, sizeof(m_fTranslate));
         memset(m_fScale, 0, sizeof(m_fScale));
+        m_tFrame.pbyData = (u8 *) malloc(MAX_VIDEO_FRAME_BUFFER_SIZE);
         m_pThread = new CThread(ThreadWrapper, this);
         m_pLock = new CLock;
+        m_pLockCB = new CLock;
         start();
     }
 
     CRenderer::~CRenderer() {
         stop();
         Destroy();
-        if(m_tFrame.pbyData != NULL)
-        {
+        if (m_tFrame.pbyData != NULL) {
             free(m_tFrame.pbyData);
             m_tFrame.pbyData = NULL;
         }
         delete m_pLock;
+        delete m_pLockCB;
         delete m_pThread;
     }
 
@@ -90,7 +95,7 @@ namespace paomiantv {
 
 //static
     void *CRenderer::ThreadWrapper(void *pThis) {
-        CThread::SetName("CRenderer");
+        CThread::SetName(typeid(*((CRenderer *) pThis)).name());
         CRenderer *p = (CRenderer *) pThis;
         int nErr = p->ThreadEntry();
         return (void *) nErr;
@@ -106,7 +111,11 @@ namespace paomiantv {
             }
             if (!m_bStop) {
                 m_pLock->unlock();
-                m_cbOnNewFrame(m_cbDelegate);
+                m_pLockCB->lock();
+                if (m_cbDelegate != NULL && m_cbDelegate != NULL) {
+                    m_cbOnNewFrame(m_cbDelegate);
+                }
+                m_pLockCB->unlock();
                 m_pLock->lock();
 
                 m_bNewFrame = FALSE;
@@ -266,10 +275,10 @@ namespace paomiantv {
     void CRenderer::SetFrame(unsigned char *pbyData, int nWidth, int nHeight) {
         LOGD("channel#%d: size: %dx%d", m_nChannel, m_tFrame.nWidth, m_tFrame.nHeight);
         BEGIN_AUTOLOCK(m_pLock);
-        int dataSize = nWidth * nHeight * 3 / 2;
-        memcpy(m_tFrame.pbyData, pbyData, dataSize);
-        m_tFrame.nWidth = nWidth;
-        m_tFrame.nHeight = nHeight;
+            int dataSize = nWidth * nHeight * 3 / 2;
+            memcpy(m_tFrame.pbyData, pbyData, dataSize);
+            m_tFrame.nWidth = nWidth;
+            m_tFrame.nHeight = nHeight;
             /*
             memcpy(m_tFrame.pbyData,tFrame.pbyData,tFrame.nWidth*tFrame.nHeight*3/2);
             m_tFrame.nWidth = tFrame.nWidth;
@@ -278,10 +287,13 @@ namespace paomiantv {
             if (m_nFrameDirection != 0) {
                 m_nFrameDirection = 0;
             }
+            m_bNewFrame = TRUE;
+            m_pLock->acttive();
         END_AUTOLOCK;
     }
 
-    void CRenderer::SetFrame(unsigned char *pbyData, int nWidth, int nHeight,unsigned long long uTimestamp, s32 nDir, BOOL32 bIsFrontCamera) {
+    void CRenderer::SetFrame(unsigned char *pbyData, int nWidth, int nHeight,
+                             unsigned long long uTimestamp, s32 nDir, BOOL32 bIsFrontCamera) {
         LOGD("channel#%d: camera:%s, dir:%d, size: %dx%d", m_nChannel,
              (bIsFrontCamera ? "front" : "rear"), nDir, nWidth, nHeight);
         BEGIN_AUTOLOCK(m_pLock);
@@ -289,8 +301,7 @@ namespace paomiantv {
             if (m_nFrameDirection != nDir
                 || m_bIsFrontCamera != bIsFrontCamera
                 || nWidth != m_tFrame.nWidth
-                || nHeight != m_tFrame.nHeight)
-            {
+                || nHeight != m_tFrame.nHeight) {
                 m_bIsFrontCamera = bIsFrontCamera;
                 m_nFrameDirection = nDir;
                 m_bRedrawBkground = TRUE;
@@ -301,12 +312,15 @@ namespace paomiantv {
             m_tFrame.nWidth = nWidth;
             m_tFrame.nHeight = nHeight;
             m_tFrame.uTimestamp = uTimestamp;
+
             /*
             memcpy(m_tFrame.pbyData,tFrame.pbyData,tFrame.nWidth*tFrame.nHeight*3/2);
             m_tFrame.nWidth = tFrame.nWidth;
             m_tFrame.nHeight = tFrame.nHeight;
             m_tFrame.uTimestamp = tFrame.uTimestamp;
             */
+            m_bNewFrame = TRUE;
+            m_pLock->acttive();
         END_AUTOLOCK;
     }
 
@@ -495,8 +509,10 @@ namespace paomiantv {
     }
 
     void CRenderer::bindEvent(NewFrameCB cbOnNewFrame, void *cbDelegate) {
+        m_pLockCB->lock();
         m_cbDelegate = cbDelegate;
         m_cbOnNewFrame = cbOnNewFrame;
+        m_pLockCB->unlock();
     }
 
 } // namespace paomiantv

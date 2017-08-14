@@ -15,48 +15,34 @@
 #ifndef _PAOMIANTV_PRODUCER_H_
 #define _PAOMIANTV_PRODUCER_H_
 
-#include <typedef.h>
-#include <autolock.h>
-#include "storyboard.h"
+#include "typedef.h"
+#include "autolock.h"
+#include "vcontroller.h"
+#include "acontroller.h"
 
 namespace paomiantv
 {
 class CProducer
 {
   public:
-    CProducer(CStoryboard *pStoryboard);
+    CProducer(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
     virtual ~CProducer();
 
-    // CProducer(const CProducer &);
-
-    // CProducer &operator=(const CProducer &);
-
-    // static CProducer *m_pInstance;
-
-    // class Garbo
-    // {
-    //   public:
-    //     ~Garbo()
-    //     {
-    //         if (CProducer::m_pInstance)
-    //         {
-    //             delete CProducer::m_pInstance;
-    //         }
-    //     }
-    // };
-
-    // static Garbo garbo;
   private:
     BOOL32 m_bIsStarted;
     BOOL32 m_bIsPaused;
+    BOOL32 m_bIsSave;
     CStoryboard *m_pStoryboard;
+
+    CController* m_pVController;
+    CController* m_pAController;
     ILock *m_pLock;
 
   public:
     // static CProducer *getInstance();
 
-    void start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    void start(BOOL32 bIsSave);
 
     void stop();
 
@@ -66,7 +52,9 @@ class CProducer
 
     inline BOOL32 isPaused();
     inline BOOL32 isStarted();
-    inline CStoryboard *getStoryboard()
+    inline CStoryboard *getStoryboard();
+
+    void seekTo(s32 nClipIndex);
 };
 
 inline BOOL32 CProducer::isPaused()

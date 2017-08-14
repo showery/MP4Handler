@@ -34,6 +34,7 @@ namespace paomiantv {
 
     private:
         CRenderer *m_pRenderer;
+        static CLock m_SingleInstanceLock;
 
     public:
         static TJavaClazzParam *GetJavaClazzParam();
@@ -166,7 +167,7 @@ namespace paomiantv {
         CJNIModuleRenderer(JNIEnv *env, jobject jRenderer,
                            jclass jcls, jfieldID jfld, jmethodID jmtd);
 
-        ~CJNIModuleRenderer();
+        virtual ~CJNIModuleRenderer();
 
         JavaVM *m_jvm;
         jclass m_jcls;

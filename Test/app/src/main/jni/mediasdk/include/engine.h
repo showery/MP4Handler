@@ -13,41 +13,51 @@
  * 2017-08-02  v1.0        huangxuefeng  created
  ******************************************************************************/
 
-
 #ifndef _PAOMIANTV_ENGINE_H
 #define _PAOMIANTV_ENGINE_H
 
 #include "typedef.h"
-#include "mp4v2/mp4v2.h"
-#include "storyboard.h"
+#include "producer.h"
 
-namespace paomiantv{
+namespace paomiantv {
 
-    class CEngine
-    {
+    class CEngine {
     public:
         CEngine();
+
         ~CEngine();
 
     private:
+        CStoryboard *m_pStoryboard;
+        CProducer *m_pProducer;
+
         static void log_cb(MP4LogLevel loglevel, const s8 *fmt, va_list ap);
 
     public:
-        BOOL32 init();
+        BOOL32 init(s32 nVersion);
+
         void uninit();
 
-        void produce(CStoryboard *pStoryboard);
-        void pause();
-        void cancel();
+        void start(BOOL32 bIsSave = TRUE);
 
-        void startPreview(CStoryboard *pStoryboard);
-        void pausePreview();
-        void stopPreview();
+        void pause();
 
         void resume();
 
-        void resumePreview();
+        void cancel();
+
+        void setDataSource(CStoryboard *pStoryboard);
+
+        void seekTo(s32 sllPosition);
+
+
+
+        CProducer *getProducer();
     };
+
+    inline CProducer *CEngine::getProducer(){
+        return m_pProducer;
+    }
 
 } // namespace paomiantv
 

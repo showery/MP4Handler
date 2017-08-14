@@ -27,13 +27,13 @@ typedef struct tagVSecdPicParam
     //! the height of secondary picture.
     s32 m_nHeight;
     //! the position X in base picture for persentation(%)
-    float *m_fX;
+    float m_fX;
     //! the position Y in base picture for persentation(%)
-    float *m_fY;
+    float m_fY;
     //! the degree for rotation(0.0-360.0)
-    float *m_fDegree;
+    float m_fDegree;
     //! the scale
-    float *m_fScale;
+    float m_fScale;
     //! the image for picture synthesis
     u8 *m_pbySecondaryPic;
 } TVSecdPicParam;
@@ -41,13 +41,13 @@ typedef struct tagVSecdPicParam
 typedef struct tagVTextParam
 {
     //! the position X in base picture for persentation(%)
-    float *m_fX;
+    float m_fX;
     //! the position Y in base picture for persentation(%)
-    float *m_fY;
+    float m_fY;
     //! the degree for rotation(0.0-360.0)
-    float *m_fDegree;
+    float m_fDegree;
     //! the scale
-    float *m_fScale;
+    float m_fScale;
     //! the text for picture;
     s8 *m_pchText;
 } TVTextParam;

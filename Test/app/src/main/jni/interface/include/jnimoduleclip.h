@@ -29,8 +29,9 @@ namespace paomiantv {
     class CJNIModuleClip : public CJNIModule {
     private:
         CClip *m_pClip;
-        std::set<CJNIModuleFilter *> m_sJNIFilters;
-        std::set<CJNIModuleTransition *> m_sJNITransitions;
+        static CLock m_SingleInstanceLock;
+        std::vector<CJNIModuleFilter *> m_vJNIFilters;
+        std::vector<CJNIModuleTransition *> m_vJNITransitions;
 
     public:
         static TJavaClazzParam *GetJavaClazzParam();
@@ -86,13 +87,13 @@ namespace paomiantv {
     public:
         BOOL32 addFilter(CJNIModuleFilter *filter);
 
-        CJNIModuleFilter *removeFilter(s32 nIndex);
+        jobject removeFilter(s32 nIndex);
 
         CJNIModuleFilter *getFilter(s32 position);
 
         BOOL32 addTransition(CJNIModuleTransition *transition);
 
-        CJNIModuleTransition *removeTransition(s32 nIndex);
+        jobject removeTransition(s32 nIndex);
 
         CJNIModuleTransition *getTransition(s32 position);
 

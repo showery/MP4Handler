@@ -15,6 +15,7 @@
 #ifndef _PAOMIANTV_CONTROLLER_H_
 #define _PAOMIANTV_CONTROLLER_H_
 
+#include <typeinfo>
 #include "typedef.h"
 #include "autolock.h"
 #include "autolog.h"
@@ -23,32 +24,46 @@
 #include "storyboard.h"
 #include "controller.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CController
-{
-  protected:
-    CController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
-    virtual ~CController();
+    class CController {
+    public:
+        CController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-    BOOL32 m_bIsWithPreview;
-    const CStoryboard *m_pStoryboard;
-    ILock *m_pLock;
+        virtual ~CController();
 
-  public:
-    virtual void init();
+    protected:
+        virtual int run();
 
-    virtual void uninit();
+        BOOL32 m_bIsSave;
+        CStoryboard *m_pStoryboard;
 
-    virtual void start();
+        ILock *m_pLock;
+        CThread *m_pThread;
 
-    virtual void stop();
+        BOOL32 m_bIsStarted;
+        BOOL32 m_bIsStopped;
+        BOOL32 m_bIsPaused;
 
-    virtual void resume();
+        //when preview mode, the clip position to preview started.default is 0
+        s32 m_nPreviewFromClipIndex;
+        //when preview mode, the clip position to preview ended. default is -1(meaning last index, reserved)
+        s32 m_nPreviewToClipIndex;
 
-    virtual void pause();
-};
+    private:
+        static void *ThreadWrapper(void *pData);
+
+    public:
+        virtual void start(BOOL32 bIsSave);
+
+        virtual void stop();
+
+        virtual void resume();
+
+        virtual void pause();
+
+        virtual void seekTo(s32 nClipIndex);
+    };
 }
 
 #endif /* _PAOMIANTV_CONTROLLER_H_ */

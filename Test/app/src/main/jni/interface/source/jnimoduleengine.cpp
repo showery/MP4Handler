@@ -19,21 +19,20 @@
 #include "stdlib.h"
 
 namespace paomiantv {
+    CLock CJNIModuleEngine::m_SingleInstanceLock;
 
     TJavaClazzParam *CJNIModuleEngine::GetJavaClazzParam() {
         TJavaClazzParam *ptJavaClazzParam = new TJavaClazzParam;
         JNINativeMethod arrMethods[] =
                 {
-                        {"_init",          "()Z",                                   (void *) jni_init},
-                        {"_uninit",        "()V",                                   (void *) jni_uninit},
-                        {"_produce",      "(Lcn/paomiantv/render/PMStoryboard;)V", (void *) jni_produce},
-                        {"_pause",         "()V",                                   (void *) jni_pause},
-                        {"_resume",        "()V",                                   (void *) jni_resume},
-                        {"_cancel",        "()V",                                   (void *) jni_cancel},
-                        {"_startPreview",  "(Lcn/paomiantv/render/PMStoryboard;)V", (void *) jni_startPreview},
-                        {"_pausePreview",  "()V",                                   (void *) jni_pausePreview},
-                        {"_resumePreview", "()V",                                   (void *) jni_resumePreview},
-                        {"_stopPreview",   "()V",                                   (void *) jni_stopPreview}};
+                        {"_init",          "(I)Z",                                    (void *) jni_init},
+                        {"_uninit",        "()V",                                     (void *) jni_uninit},
+                        {"_setDataSource", "(Lcn/paomiantv/mediasdk/PMStoryboard;)V", (void *) jni_setDataSource},
+                        {"_start",         "(Z)V",                                    (void *) jni_start},
+                        {"_seekTo",        "(I)V",                                    (void *) jni_seekTo},
+                        {"_pause",         "()V",                                     (void *) jni_pause},
+                        {"_resume",        "()V",                                     (void *) jni_resume},
+                        {"_cancel",        "()V",                                     (void *) jni_cancel}};
         ptJavaClazzParam->m_nMtdCount = NELEM(arrMethods);
         sprintf(ptJavaClazzParam->m_pchClazzName, "cn/paomiantv/mediasdk/PMEngine%s", "");
         ptJavaClazzParam->m_ptMethods = (JNINativeMethod *) malloc(sizeof(arrMethods));
@@ -197,8 +196,13 @@ namespace paomiantv {
                 !CJNIModuleManager::getInstance()->contains((CJNIModuleEngine *) nValue)) {
                 //LOGE("get jni Engine from java object failed");
                 //return NULL;
-                LOGI("try to get a new CJNIModuleEngine");
-                ret = CreateJniEngine(env, jEngine);
+                m_SingleInstanceLock.lock();
+                if (!env->GetIntField(jEngine, jfld) ||
+                    !CJNIModuleManager::getInstance()->contains((CJNIModuleEngine *) nValue)) {
+                    LOGI("try to get a new CJNIModuleEngine");
+                    ret = CreateJniEngine(env, jEngine);
+                }
+                m_SingleInstanceLock.unlock();
             } else {
                 ret = (CJNIModuleEngine *) nValue;
             }
@@ -214,14 +218,14 @@ namespace paomiantv {
         return CJNIModuleManager::getInstance()->contains(p);
     }
 
-    jboolean CJNIModuleEngine::jni_init(JNIEnv *env, jobject jengine) {
+    jboolean CJNIModuleEngine::jni_init(JNIEnv *env, jobject jengine, jint jversion) {
         USE_LOG;
-        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::CreateJniEngine(env, jengine);
+        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
             return FALSE;
         }
 
-        return pJNIEngine->getEngine()->init();
+        return pJNIEngine->getEngine()->init(jversion);
     }
 
     void CJNIModuleEngine::jni_uninit(JNIEnv *env, jobject jengine) {
@@ -234,54 +238,7 @@ namespace paomiantv {
         CJNIModuleEngine::DestroyJniEngine(pJNIEngine);
     }
 
-
-    void CJNIModuleEngine::jni_produce(JNIEnv *env, jobject jengine, jobject jstoryboard) {
-        USE_LOG;
-        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
-        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
-            return;
-        }
-
-        CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
-                                                                                      jstoryboard);
-        if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard()) {
-            return;
-        }
-
-        pJNIEngine->getEngine()->produce(pJNIStoryboard->getCStoryboard());
-    }
-
-    void CJNIModuleEngine::jni_pause(JNIEnv *env, jobject jengine) {
-        USE_LOG;
-        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
-        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
-            return;
-        }
-        pJNIEngine->getEngine()->pause();
-
-    }
-
-    void CJNIModuleEngine::jni_resume(JNIEnv *env, jobject jengine) {
-        USE_LOG;
-        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
-        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
-            return;
-        }
-        pJNIEngine->getEngine()->resume();
-
-    }
-
-    void CJNIModuleEngine::jni_cancel(JNIEnv *env, jobject jengine) {
-        USE_LOG;
-        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
-        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
-            return;
-        }
-        pJNIEngine->getEngine()->cancel();
-
-    }
-
-    void CJNIModuleEngine::jni_startPreview(JNIEnv *env, jobject jengine, jobject jstoryboard) {
+    void CJNIModuleEngine::jni_setDataSource(JNIEnv *env, jobject jengine, jobject jstoryboard) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
@@ -294,35 +251,56 @@ namespace paomiantv {
             return;
         }
 
-        pJNIEngine->getEngine()->startPreview(pJNIStoryboard->getCStoryboard());
+        pJNIEngine->getEngine()->setDataSource(pJNIStoryboard->getCStoryboard());
     }
 
-    void CJNIModuleEngine::jni_pausePreview(JNIEnv *env, jobject jengine) {
+    void CJNIModuleEngine::jni_seekTo(JNIEnv *env, jobject jengine, jint jclipIndex) {
+        USE_LOG;
+        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
+        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
+            LOGE("start failed, jniengine or engine is NULL");
+            return;
+        }
+
+        pJNIEngine->getEngine()->seekTo(jclipIndex);
+    }
+
+    void CJNIModuleEngine::jni_start(JNIEnv *env, jobject jengine, jboolean jisSave) {
+        USE_LOG;
+        CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
+        if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
+            LOGE("start failed, jniengine or engine is NULL");
+            return;
+        }
+
+        pJNIEngine->getEngine()->start(jisSave);
+    }
+
+    void CJNIModuleEngine::jni_pause(JNIEnv *env, jobject jengine) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
             return;
         }
-        pJNIEngine->getEngine()->pausePreview();
+        pJNIEngine->getEngine()->pause();
     }
 
-    void CJNIModuleEngine::jni_resumePreview(JNIEnv *env, jobject jengine) {
+    void CJNIModuleEngine::jni_resume(JNIEnv *env, jobject jengine) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
             return;
         }
-        pJNIEngine->getEngine()->resumePreview();
+
+        pJNIEngine->getEngine()->resume();
     }
 
-    void CJNIModuleEngine::jni_stopPreview(JNIEnv *env, jobject jengine) {
+    void CJNIModuleEngine::jni_cancel(JNIEnv *env, jobject jengine) {
         USE_LOG;
         CJNIModuleEngine *pJNIEngine = CJNIModuleEngine::GetJniEngine(env, jengine);
         if (pJNIEngine == NULL || pJNIEngine->getEngine() == NULL) {
             return;
         }
-        pJNIEngine->getEngine()->stopPreview();
+        pJNIEngine->getEngine()->cancel();
     }
-
-
 }

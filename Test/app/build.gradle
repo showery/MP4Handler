@@ -5,12 +5,17 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "cn.paomiantv.test"
-        minSdkVersion 18
+        minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            // 设置支持的 SO 库构架，注意这里要根据你的实际情况来设置
+            abiFilters 'armeabi-v7a'// 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64'
+        }
     }
+
 //    sourceSets.main {
 //        jni.srcDirs = []//disable automatic ndk-build call
 //        jniLibs.srcDir "src/main/libs"

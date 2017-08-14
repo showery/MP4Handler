@@ -43,7 +43,9 @@ namespace paomiantv {
     private:
         CStoryboard *m_pStoryboard;
         jmethodID m_ajmtd[4];
-        std::set<CJNIModuleClip *> m_sJNIClips;
+        std::vector<CJNIModuleClip *> m_vJNIClips;
+        jobject jrenderer;
+        static CLock m_SingleInstanceLock;
 
     public:
         static CJNIModuleStoryboard *CreateJniStoryboard(JNIEnv *env, jobject jStoryboard);
@@ -78,6 +80,10 @@ namespace paomiantv {
 
         static jboolean jni_addClip(JNIEnv *env, jobject jstoryboard, jobject jclip);
 
+
+        static jboolean
+        jni_replaceClip(JNIEnv *env, jobject jstoryboard, jint jindex, jobject jclip);
+
         static jboolean
         jni_insertClip(JNIEnv *env, jobject jstoryboard, jint jindex, jobject jclip);
 
@@ -95,9 +101,11 @@ namespace paomiantv {
 
         BOOL32 addClip(CJNIModuleClip *clip);
 
+        BOOL32 replaceClip(s32 nIndex, CJNIModuleClip *clip);
+
         BOOL32 insertClip(s32 nIndex, CJNIModuleClip *clip);
 
-        CJNIModuleClip *removeClip(s32 nIndex);
+        jobject removeClip(s32 nIndex);
 
         CJNIModuleClip *getClip(s32 jindex);
 

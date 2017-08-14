@@ -29,6 +29,7 @@ namespace paomiantv {
 
     private:
         CTransition *m_pTransition;
+        static CLock m_SingleInstanceLock;
 
     public:
 

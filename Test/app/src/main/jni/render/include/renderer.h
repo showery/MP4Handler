@@ -204,11 +204,13 @@ namespace paomiantv {
         float m_fTranslate[kDirectEnd];
         float m_fScale[kDirectEnd];
 
+        ILock *m_pLock;
+        ILock *m_pLockCB;
         CThread *m_pThread;
         bool m_bStarted;
         bool m_bStop;
         bool m_bNewFrame;
-        ILock *m_pLock;
+
 
         NewFrameCB m_cbOnNewFrame;
         void *m_cbDelegate;

@@ -29,6 +29,7 @@ namespace paomiantv {
     class CJNIModuleEngine : public CJNIModule {
     private:
         CEngine *m_pEngine;
+        static CLock m_SingleInstanceLock;
     public:
 
         static TJavaClazzParam *GetJavaClazzParam();
@@ -47,19 +48,15 @@ namespace paomiantv {
 
         virtual ~CJNIModuleEngine();
 
-        static jboolean jni_init(JNIEnv *env, jobject jengine);
+        static jboolean jni_init(JNIEnv *env, jobject jengine, jint jversion);
 
         static void jni_uninit(JNIEnv *env, jobject jengine);
 
-        static void jni_startPreview(JNIEnv *env, jobject jengine, jobject jstoryboard);
+        static void jni_setDataSource(JNIEnv *env, jobject jengine, jobject jstoryboard);
 
-        static void jni_pausePreview(JNIEnv *env, jobject jengine);
+        static void jni_start(JNIEnv *env, jobject jengine, jboolean jisSave);
 
-        static void jni_resumePreview(JNIEnv *env, jobject jengine);
-
-        static void jni_stopPreview(JNIEnv *env, jobject jengine);
-
-        static void jni_produce(JNIEnv *env, jobject jengine, jobject jstoryboard);
+        static void jni_seekTo(JNIEnv *env, jobject jengine, jint jclipIndex);
 
         static void jni_pause(JNIEnv *env, jobject jengine);
 

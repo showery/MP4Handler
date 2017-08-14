@@ -21,42 +21,41 @@
 #include "stdlib.h"
 #include "transparam.h"
 #include "thread.h"
-#include "vprocessor.h"
 #include "storyboard.h"
 #include "controller.h"
+#include "h264dec.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CVController:public CController
-{
+    class CVController : public CController {
 
-public:
-    CVController(const CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+    public:
+        CVController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-     ~CVController();
+        virtual ~CVController();
 
-    void start(CStoryboard *pStoryboard, BOOL32 bIsWithPreview = TRUE);
+//    void start(BOOL32 bIsSave);
+//
+//    void stop();
+//
+//    void resume();
+//
+//    void pause();
+//
+//    void seekTo(s32 nClipIndex);
 
-private:
-    static void *ThreadWrapper(void *pData);
+    private:
+        CH264Dec *m_pH264Dec;
+    private:
+        int run();
 
-     void ThreadEntry(CStoryboard *pStoryboard);
+        void handle(CStoryboard *pStoryboard);
 
-    BOOL32 m_bIsStop;
-    BOOL32 m_bIsStarted;
-    BOOL32 m_bIsNeedPreview;
-    CThread *m_pThread;
-    ILock *m_pLock;
+        s32 getSampleNum(CStoryboard *pStoryboard);
 
-    CVProcessor *m_pProcessor;
-
-private:
-    void handle(CStoryboard *pStoryboard);
-    s32 getSampleNum(CStoryboard *pStoryboard);
-    //输入输出都是解码后的声音数据(YUV)
-    BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
-};
+        //输入输出都是解码后的声音数据(YUV)
+        BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
+    };
 }
 
 #endif /* _PAOMIANTV_VCONTROLLER_H_ */

@@ -21,6 +21,7 @@
 #include "jnimoduleclip.h"
 
 namespace paomiantv {
+    CLock CJNIModuleClip::m_SingleInstanceLock;
 
     TJavaClazzParam *CJNIModuleClip::GetJavaClazzParam() {
         TJavaClazzParam *ptJavaClazzParam = new TJavaClazzParam;
@@ -50,7 +51,6 @@ namespace paomiantv {
         return ptJavaClazzParam;
     }
 
-
     CJNIModuleClip::CJNIModuleClip(JNIEnv *env, jobject jClip, jfieldID jfld) {
         USE_LOG;
 
@@ -78,7 +78,6 @@ namespace paomiantv {
         } else {
             LOGE("new clip failed ,memory is not enough!");
         }
-
     }
 
     CJNIModuleClip::~CJNIModuleClip() {
@@ -102,20 +101,20 @@ namespace paomiantv {
             m_jvm = NULL;
         }
 
-        std::set<CJNIModuleFilter *>::iterator iterFilter = m_sJNIFilters.begin();
+        std::vector<CJNIModuleFilter *>::iterator iterFilter = m_vJNIFilters.begin();
 
-        while (iterFilter != m_sJNIFilters.end()) {
+        while (iterFilter != m_vJNIFilters.end()) {
             if (*iterFilter != NULL) {
                 CJNIModuleFilter *pJNIFilter = *iterFilter;
                 CJNIModuleFilter::DestroyJniFilter(pJNIFilter);
             }
             ++iterFilter;
         }
-        m_sJNIFilters.clear();
+        m_vJNIFilters.clear();
 
-        std::set<CJNIModuleTransition *>::iterator iterTrans = m_sJNITransitions.begin();
+        std::vector<CJNIModuleTransition *>::iterator iterTrans = m_vJNITransitions.begin();
 
-        while (iterTrans != m_sJNITransitions.end()) {
+        while (iterTrans != m_vJNITransitions.end()) {
             if (*iterTrans != NULL) {
 
                 CJNIModuleTransition *pJNITrans = *iterTrans;
@@ -123,7 +122,7 @@ namespace paomiantv {
             }
             ++iterTrans;
         }
-        m_sJNITransitions.clear();
+        m_vJNITransitions.clear();
 
         // be sure unregister before killing
         CJNIModuleManager::getInstance()->remove(this);
@@ -156,6 +155,7 @@ namespace paomiantv {
             }
 
             CJNIModuleClip *pNew = new CJNIModuleClip(env, jClip, jfld);
+
             if (!CJNIModuleManager::getInstance()->contains(pNew)) {
                 LOGE("create CJNIModuleClip failed");
                 delete pNew;
@@ -167,7 +167,6 @@ namespace paomiantv {
 
             env->SetIntField(jClip, jfld, (jint) pNew);
             ret = pNew;
-
             LOGI("create CJNIModuleClip ok");
         } while (0);
         env->PopLocalFrame(NULL);
@@ -230,8 +229,13 @@ namespace paomiantv {
                 !CJNIModuleManager::getInstance()->contains((CJNIModuleClip *) nValue)) {
                 //LOGE("get jni Clip from java object failed");
                 //return NULL;
-                LOGI("try to get a new CJNIModuleClip");
-                ret = CreateJniClip(env, jClip);
+                m_SingleInstanceLock.lock();
+                if(!env->GetIntField(jClip, jfld)||
+                   !CJNIModuleManager::getInstance()->contains((CJNIModuleClip *) nValue)){
+                    LOGI("try to get a new CJNIModuleClip");
+                    ret = CreateJniClip(env, jClip);
+                }
+                m_SingleInstanceLock.unlock();
             } else {
                 ret = (CJNIModuleClip *) nValue;
             }
@@ -251,7 +255,7 @@ namespace paomiantv {
     CJNIModuleClip::jni_init(JNIEnv *env, jobject jclip, jstring jsrc, jlong jstart,
                              jlong jduration) {
         USE_LOG;
-        CJNIModuleClip *pJNIClip = CJNIModuleClip::CreateJniClip(env, jclip);
+        CJNIModuleClip *pJNIClip = CJNIModuleClip::GetJniClip(env, jclip);
         if (pJNIClip == NULL || pJNIClip->getCClip() == NULL) {
             return FALSE;
         }
@@ -296,7 +300,6 @@ namespace paomiantv {
         if (getStringBytes(env, jsrc, achSrcPath, MAX_LEN_FILE_PATH) >= 0) {
             pJNIClip->getCClip()->setSrc(achSrcPath);
         }
-
     }
 
     jlong CJNIModuleClip::jni_getStart(JNIEnv *env, jobject jclip) {
@@ -369,11 +372,7 @@ namespace paomiantv {
         if (pJNIClip == NULL) {
             return FALSE;
         }
-        CJNIModuleFilter *pJNIFilter = pJNIClip->removeFilter(jposition);
-        if (pJNIFilter == NULL) {
-            return NULL;
-        }
-        return pJNIFilter->getObject();
+        return pJNIClip->removeFilter(jposition);
     }
 
     jint CJNIModuleClip::jni_getFilterCount(JNIEnv *env, jobject jclip) {
@@ -418,11 +417,7 @@ namespace paomiantv {
         if (pJNIClip == NULL) {
             return FALSE;
         }
-        CJNIModuleTransition *pJNITransition = pJNIClip->removeTransition(jposition);
-        if (pJNITransition == NULL) {
-            return NULL;
-        }
-        return pJNITransition->getObject();
+        return pJNIClip->removeTransition(jposition);
     }
 
     jint CJNIModuleClip::jni_getTransitionCount(JNIEnv *env, jobject jclip) {
@@ -439,8 +434,8 @@ namespace paomiantv {
         if (pFilter == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleFilter *>::iterator iter;
-        for (iter = m_sJNIFilters.begin(); iter != m_sJNIFilters.end();) {
+        std::vector<CJNIModuleFilter *>::iterator iter;
+        for (iter = m_vJNIFilters.begin(); iter != m_vJNIFilters.end();) {
             if (*iter != NULL && (*iter)->getFilter() == pFilter) {
                 return *iter;
             }
@@ -457,8 +452,8 @@ namespace paomiantv {
         if (pTransition == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleTransition *>::iterator iter;
-        for (iter = m_sJNITransitions.begin(); iter != m_sJNITransitions.end();) {
+        std::vector<CJNIModuleTransition *>::iterator iter;
+        for (iter = m_vJNITransitions.begin(); iter != m_vJNITransitions.end();) {
             if (*iter != NULL && (*iter)->getTransition() == pTransition) {
                 return *iter;
             }
@@ -471,7 +466,7 @@ namespace paomiantv {
         if (m_pClip == NULL) {
             return NULL;
         }
-        m_sJNIFilters.insert(filter);
+        m_vJNIFilters.push_back(filter);
 
         m_pClip->addFilter(filter->getFilter());
         return TRUE;
@@ -481,13 +476,13 @@ namespace paomiantv {
         if (m_pClip == NULL) {
             return NULL;
         }
-        m_sJNITransitions.insert(transition);
+        m_vJNITransitions.push_back(transition);
 
         m_pClip->addTransition(transition->getTransition());
         return TRUE;
     }
 
-    CJNIModuleFilter *CJNIModuleClip::removeFilter(s32 nIndex) {
+    jobject CJNIModuleClip::removeFilter(s32 nIndex) {
         if (m_pClip == NULL) {
             return NULL;
         }
@@ -495,22 +490,21 @@ namespace paomiantv {
         if (pFilter == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleFilter *>::iterator iter;
-        for (iter = m_sJNIFilters.begin(); iter != m_sJNIFilters.end();) {
+        std::vector<CJNIModuleFilter *>::iterator iter;
+        for (iter = m_vJNIFilters.begin(); iter != m_vJNIFilters.end();) {
             if (*iter != NULL && (*iter)->getFilter() == pFilter) {
                 CJNIModuleFilter *pJNIFilter = *iter;
-
-                m_sJNIFilters.erase(iter);
-                return pJNIFilter;
-
-
+                m_vJNIFilters.erase(iter);
+                jobject jobj = pJNIFilter->getObject();
+                CJNIModuleFilter::DestroyJniFilter(pJNIFilter);
+                return jobj;
             }
             ++iter;
         }
         return NULL;
     }
 
-    CJNIModuleTransition *CJNIModuleClip::removeTransition(s32 nIndex) {
+    jobject CJNIModuleClip::removeTransition(s32 nIndex) {
         if (m_pClip == NULL) {
             return NULL;
         }
@@ -518,15 +512,15 @@ namespace paomiantv {
         if (pTransition == NULL) {
             return NULL;
         }
-        std::set<CJNIModuleTransition *>::iterator iter;
-        for (iter = m_sJNITransitions.begin(); iter != m_sJNITransitions.end();) {
+        std::vector<CJNIModuleTransition *>::iterator iter;
+        for (iter = m_vJNITransitions.begin(); iter != m_vJNITransitions.end();) {
             if (*iter != NULL && (*iter)->getTransition() == pTransition) {
                 CJNIModuleTransition *pJNITransition = *iter;
 
-                m_sJNITransitions.erase(iter);
-
-                return pJNITransition;
-
+                m_vJNITransitions.erase(iter);
+                jobject jobj = pJNITransition->getObject();
+                CJNIModuleTransition::DestroyJniTransition(pJNITransition);
+                return jobj;
             }
             ++iter;
         }
