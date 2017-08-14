@@ -1,105 +1,84 @@
 #include "frameprocessor.h"
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <egl/egl.h>
-#include "shader.h"
 
+#if defined(__ANDROID__)
+#include <android/log.h>
+#include<egl/egl.h>
+#else //iOS
+//TODO:Reserved for iOS
+#endif
 
-namespace paomiantv {
+namespace paomiantv
+{
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// class ImageData
 
-    static std::vector<std::shared_ptr<ImageData> > s_imageTool;
+    static std::vector<ImageData*> s_imagePool;
 
-    ImageData::ImageData()
-        :_pixelBuffer()
-        ,_bufferSize(0)
-        ,_pixelFormat(0)
-        ,_width(0)
-        ,_height(0)
+    ImageData* ImageData::create()
     {
-
-    }
-
-    ImageData::~ImageData()
-    {
-
-    }
-
-    std::shared_ptr<ImageData> ImageData::create()
-    {
-        std::shared_ptr<ImageData> sharedThis;
         if (!s_imagePool.empty()) {
-            sharedThis = s_imagePool.back();
+            ImageData *imgData = s_imagePool.back();
             s_imagePool.pop_back();
+            return imgData;
         } else {
-            sharedThis.reset(new ImageData());
+            return new ImageData();
         }
-
-        return sharedThis;
     }
-
-    static releaseImageToPool(std::shared_ptr<ImageData> val)
+        
+    void ImageData::release(ImageData *imgData)
     {
-        if (val.get()) {
-            s_imagePool.push_back(val);
+        if (imgData) {
+            s_imagePool.push_back(imgData);
         }
     }
-
+        
     void ImageData::clear()
     {
-        _pixelBuffer.reset();
+        for (size_t i=0; i<s_imagePool.size(); ++i) {
+            if (s_imagePool[i]) {
+                delete s_imagePool[i];
+            }
+        }
+        s_imagePool.clear();
     }
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// class LayerData
 
-    static std::vector<std::shared_ptr<LayerData> > _layerPool;
-
-    LayerData::LayerData
+    static std::vector<LayerData*> s_layerPool;
+        
+    LayerData *LayerData::create()
     {
-
-    }
-
-    LayerData::~LayerData()
-    {
-        reset();
-    }
-
-    std::shared_ptr<LayerData> LayerData::create()
-    {
-        std::shared_ptr<LayerData> sharedThis;
-        if (!_layerPool.empty()) {
-            sharedThis = _layerPool.back();
-            _layerPool.pop_back();
+        if (!s_layerPool.empty()) {
+            LayerData *layerData = s_layerPool.back();
+            s_layerPool.pop_back();
+            return layerData;
         } else {
-            sharedThis.reset(new LayerData());
+            return new LayerData();
         }
-
-        return sharedThis;
     }
-
-    void LayerData::releaseToPool(std::shared_ptr<LayerData> val)
+        
+    void LayerData::release(LayerData *layerData)
     {
-        if (val.get()) {
-            _layerPool.push_back(val);
+        if (layerData) {
+            s_layerPool.push_back(layerData);
         }
     }
 
     void LayerData::clear()
     {
-        if (_layerImage.get()) {
-            releaseImageToPool(_layerImage);
-            _layerImage.clear();
+        for (size_t i=0; i<s_layerPool.size(); ++i) {
+            if (s_layerPool[i]) {
+                delete s_layerPool[i];
+            }
         }
-        if (_toneMapImage.get()) {
-            releaseImageToPool(_toneMapImage);
-            _toneMapImage.clear();
-        }
+        s_layerPool.clear();
     }
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// Shader
 
 #ifndef TOSTRING
@@ -387,9 +366,10 @@ namespace paomiantv {
         }
     );
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// class ProgramData
-    class ProgramData
+
+class ProgramData
     {
     protected:
         ProgramData()
@@ -413,8 +393,13 @@ namespace paomiantv {
     
     protected:
         bool _init(const char *vertexCode, const char *fragmentCode);
+
+        GLuint _compileShader(GLenum type, const char *shaderCode);
+
         bool _parseLocations();
+
         bool _parseUnifroms();
+
         GLuint _createVBO(GLint size, GLenum type);
 
     public:
@@ -472,6 +457,38 @@ namespace paomiantv {
         return true;
     }
 
+    GLuint ProgramData::_compileShader(GLenum type, const char *shaderCode)
+    {
+        GLuint shader;
+        GLint compiled;
+
+        shader = glCreateShader(type);
+        if (shader == 0) {
+            FrameProcessor::logErrorCallback("create shader failed!");
+            return 0;
+        }
+
+        glShaderSource(shader, 1, &shaderSrc, NULL);
+        glCompileShader(shader);
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+        if (!compiled) {
+            GLint infoLen = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+            if (infoLen > 1)
+            {
+                char *infoLog = new char[infoLen];
+                glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+                FrameProcessor::logErrorCallback(infoLog);
+                delete [] infoLog;
+            }
+
+            glDeleteShader(shader);
+            return 0;
+        }
+
+        return shader;
+    }
+
     bool ProgramData::_parseLocations()
     {
         GLint attrCount = 0;
@@ -525,10 +542,10 @@ namespace paomiantv {
         glUseProgram(_program);
     }
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// class QuadRenderer
 
-    static const MIN_CACHE_TEXTURE_SIZE = 256;
+static const MIN_CACHE_TEXTURE_SIZE = 256;
 
     class QuadRenderer
     {
@@ -541,6 +558,8 @@ namespace paomiantv {
         static void destroy()
 
         static void setViewPort(float x, float y, float width, float height);
+
+        static void clearColor(float r, float g, float b, float a);
 
         static void setRenderTarget(std::shared_ptr<ImageData> imgData);
 
@@ -611,14 +630,11 @@ namespace paomiantv {
 
     bool QuadRenderer::initialize()
     {
-        if (!_initContext()) {
-            return;
-        }
         if (!_initPrograms()) {
-            return;
+            return false;
         }
         if (!_initVertex()) {
-            return;
+            return false;
         }
 
         glGenFramebuffers(1, &_fbo);
@@ -661,63 +677,6 @@ namespace paomiantv {
         _destroyContext();
 
         _initialized = false;
-    }
-
-    bool QuadRenderer::_initContext()
-    {
-        _display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if(!eglInitialize(_display, nullptr, nullptr)) {
-            return false;
-        }
-
-        const EGLint attribs[] = {
-            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-            EGL_BLUE_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_RED_SIZE, 8,
-            EGL_NONE
-        };
-        EGLint numConfigs;
-        EGLConfig config;
-        if (!eglChooseConfig(_display, attribs, &config, 1, &numConfigs)) {
-            return false;
-        }
-
-        if (!eglGetConfigAttrib(_display, config, EGL_NATIVE_VIRTUAL_ID, &format)) {
-            return false;
-        }
-
-        const EGLint contextAttr[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 2,
-            EGL_NONE
-        };
-        _context = eglCreateContext(_display, config, EGL_NO_CONTEXT, )
-
-        const EGLint surfaceAttr[] = {
-            EGL_WIDTH, 1280,
-            EGL_HEIGHT, 720,
-            EGL_NONE
-        };
-        _surface = eglCreatePbufferSurface(_display, config, surfaceAttr);
-        if(EGL_NO_SURFACE == _surface) {
-            return false;
-        }
-
-        eglMakeCurrent(_display, config, EGL_NO_CONTEXT, contextAttr);
-
-        return true;
-    }
-
-    void QuadRenderer::_destroyContext()
-    {
-        eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        eglDestroyContext(_display, _context);
-        eglDestroyContext(_display, _surface);
-        eglTerminate(_display);
-
-        _display = EGL_NO_DISPLAY;
-        _surface = EGL_NO_SURFACE;
-        _context = _EGL_NO_CONTEXT;
     }
 
     bool QuadRenderer::_initPrograms()
@@ -928,6 +887,12 @@ namespace paomiantv {
         destData[3 * destStride + 1] = (srcData[3 * srcStride + 1] - midY) * 2.0f / _viewPort[3];
     }
 
+    void QuadRenderer::clearColor(float r, float g, float b, float a)
+    {
+        glClearColor(r, g, b, a);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
     void QuadRenderer::setRenderTarget(std::shared_ptr<ImageData> imgData)
     {
         if (!imgData.get()) {
@@ -1064,23 +1029,156 @@ namespace paomiantv {
         glUseProgram(0);
     }
 
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 /// class FrameProcessor
 
-    bool FrameProcessor::initialize()
+static thread_local bool s_isInitialized = false;
+static thread_local EGLDisplay s_eglDisplay = EGL_NO_DISPLAY;
+static thread_local EGLContext s_eglContext = EGL_NO_CONTEXT;
+static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
+
+#if defined(__ANDROID__)
+    static void _defaultLogInfo(const char* log)
     {
-        return QuadRenderer::initialize();
+        android_printLog(ANDROID_LOG_INFO, "%s", log);
+    }
+
+    static void _defaultLogError(const char* log)
+    {
+        android_printLog(ANDROID_LOG_ERROR, "%s", log);
+    }
+
+    static bool _initContext(int width, int height)
+    {
+        s_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (!eglInitialize(s_eglDisplay, nullptr, nullptr)) {
+            return false;
+        }
+        //Choose Config
+        const EGLinit attribs[] = {
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+            EGL_BLUE_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_RED_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
+            EGL_NONE
+        };
+        EGLint numConfigs;
+        EGLConfig config;
+        if (!eglChooseConfig(s_eglDisplay, attribs, &config, 1, &numConfigs)) {
+            return false;
+        }
+        //Create Context
+        const EGLint contextAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+            EGL_NONE
+        };
+        s_eglContext = eglCreateContext(s_eglDisplay, config, EGL_NO_CONTEXT, contextAttr);
+        if (EGL_NO_CONTEXT == s_eglContext) {
+            return false;
+        }
+        //Create Surface
+        width = width > 0 ? width : 1280;
+        height = height > 0 ? height : 720;
+        const EGLint surfaceAttr[] = {
+            EGL_WIDTH, width,
+            EGL_HEIGHT, height,
+            EGL_NONE
+        };
+        s_eglSurface = eglCreatePbufferSurface(s_eglDisplay, config, surfaceAttr);
+        if (EGL_NO_SURFACE == s_eglSurface) {
+            return false;
+        }
+
+        eglMakeCurrent(s_eglDisplay, s_eglSurface, s_eglSurface, s_eglContext);
+        return true;
+    }
+
+    static void _destroyContext()
+    {
+        eglMake(s_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroyContext(s_eglDisplay, s_eglContext);
+        eglDestroySurface(s_eglDisplay, s_eglSurface);
+        eglTerminate(s_eglDisplay);
+
+        s_eglDisplay = EGL_NO_DISPLAY;
+        s_eglSurface = EGL_NO_SURFACE;
+        s_eglContext = EGL_NO_CONTEXT;
+    }
+
+    bool FrameProcessor::initialize(int width, int height)
+    {
+        if (s_isInitialized) {
+            return true;
+        }
+
+        if (!_initContext(width, height) || !QuadRenderer::initialize()) {
+            _destroyContext();
+            return false;
+        }
+
+        if (nullptr == FrameProcessor::logInfoCallback) {
+            FrameProcessor::logInfoCallback = std::bind(_defaultLogInfo, std::placeholders::_1);
+        }
+        if (nullptr == FrameProcessor::logErrorCallback) {
+            FrameProcessor::logErrorCallback = std::bind(_defaultLogError, std::placeholders::_1);
+        }
+        
+        s_isInitialized = true;
+        return true;
     }
 
     void FrameProcessor::uninitialize()
     {
+        if (!s_isInitialized) {
+            return;
+        }
+
         QuadRenderer::destroy();
+        _destroyContext();
+
+        s_isInitialized = false;
     }
 
-    void FrameProcessor::setViewPort(float x, float y, float width, float height)
+    bool FrameProcessor::isInitialized()
     {
-        QuadRenderer::setViewPort(x, y, width, height);
+        return s_isInitialized;
     }
+#else //iOS
+    static void defaultLogInfo(const char* log)
+    {
+        //TODO:Reserved for iOS
+    }
+
+    static void defaultLogError(const char* log)
+    {
+        //TODO:Reserved for iOS
+    }
+
+    bool FrameProcessor::initialize(int width, int height)
+    {
+        if (nullptr == FrameProcessor::logInfoCallback) {
+            FrameProcessor::logInfoCallback = std::bind(_defaultLogInfo, std::placeholders::_1);
+        }
+        if (nullptr == FrameProcessor::logErrorCallback) {
+            FrameProcessor::logErrorCallback = std::bind(_defaultLogError, std::placeholders::_1);
+        }
+        //TODO:Reserved for iOS
+        return false;
+    }
+
+    void FrameProcessor::uninitialize()
+    {
+        //TODO:Reserved for iOS
+    }
+
+    bool FrameProcessor::isInitialized()
+    {
+        //TODO:Reserved for iOS
+        return false;
+    }
+#endif
 
     static bool _checkOutputFormat(unsigned int pixelFormat)
     {
@@ -1094,12 +1192,17 @@ namespace paomiantv {
         }
     }
 
-    bool FrameProcessor::processFrame(const std::vector<std::shared_ptr<LayerData> > &srcLayers, std::shared_ptr<ImageData> destImage)
+    void FrameProcessor::processFrame(const std::vector<LayerData*> &srcLayers, ImageData* destImage)
     {
-        if(srcLayers.empty() || !destImage.get() || !_checkOutputFormat(destImage->_pixelFormat)) {
+        if (!s_isInitialized) {
+            FrameProcessor::logErrorCallback("FrameProcessor.processFrame:FrameProcessor is not initialized!");
+            return;
+        }
+        if (srcLayers.empty() || !destImage.get() || !_checkOutputFormat(destImage->_pixelFormat)) {
             return false;
         }
-
+        
+        QuadRenderer::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
         QuadRenderer::setRenderTarget(destImage);
 
         bool isYUVTarget = false;
@@ -1116,12 +1219,16 @@ namespace paomiantv {
 
         return true;
     }
-
-    void FrameProcessor::drawFrame(const std::vector<std::shared_ptr<LayerData> &srcLayers)
+        
+    void FrameProcessor::drawFrame(const std::vector<LayerData*> &srcLayers)
     {
+        if (!s_isInitialized) {
+            FrameProcessor::logErrorCallback("FrameProcessor.drawFrame:FrameProcessor is not initialized!");
+            return;
+        }
         for(size_t i=0; i<srcLayers.size(); ++i) {
             QuadRenderer::drawLayer(srcLayers[i], false);
         }
     }
-
-}
+    
+} //namespace paomiantv
