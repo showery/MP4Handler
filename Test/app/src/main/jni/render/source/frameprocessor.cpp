@@ -1,10 +1,14 @@
 #include "frameprocessor.h"
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <memory>
+#include <unordered_map>
+#include <string>
 
 #if defined(__ANDROID__)
 #include <android/log.h>
 #include<egl/egl.h>
+
 #else //iOS
 //TODO:Reserved for iOS
 #endif
@@ -85,15 +89,17 @@ namespace paomiantv
 #define TOSTRING(v) #v
 #endif
 
-    typedef enum ShaderType
+    typedef enum _ShaderType
     {
         SHADER_RGB2RGB = 0,
         SHADER_RGB2YUV,
         SHADER_YUV2RGB,
-        SHADER_YUV2YUV
-    };
-    static std::unordered_map<int, const char*> s_defaultFragments;
-    static std::unordered_map<int, const char*> s_toneMapFragments;
+        SHADER_YUV2YUV,
+        SHADER_MAX
+    }ShaderType;
+
+    static std::unordered_map<int, std::string> s_defaultFragments;
+    static std::unordered_map<int, std::string> s_toneMapFragments;
 
     //Vertex
     static const char *s_vertexShader = TOSTRING(
@@ -108,263 +114,266 @@ namespace paomiantv
         }
     );
 
-    ///DefaultFragments
-    s_defaultFragments[SHADER_RGB2RGB] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        void main()
-        {
-            gl_FragColor = texture2D(u_texture, v_texCoord);
-        }
-    );
+    static void _fillFragmentsCode()
+    {
+        ///DefaultFragments
+        s_defaultFragments[SHADER_RGB2RGB] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_texture;
+            void main()
+            {
+                gl_FragColor = texture2D(u_texture, v_texCoord);
+            }
+        );
 
-    s_defaultFragments[SHADER_RGB2YUV] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        void main()
-        {
-            vec4 rgbColor = texture2D(u_texture, v_texCoord);
-            vec4 yuvColor = vec4(0, 0, 0, 1);
-            yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
-            yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
-            yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
-            gl_FragColor = yuvColor;
-        }
-    );
+        s_defaultFragments[SHADER_RGB2YUV] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_texture;
+            void main()
+            {
+                vec4 rgbColor = texture2D(u_texture, v_texCoord);
+                vec4 yuvColor = vec4(0, 0, 0, 1);
+                yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
+                yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
+                yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
+                gl_FragColor = yuvColor;
+            }
+        );
 
-    s_defaultFragments[SHADER_YUV2RGB] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_yTexture;
-        uniform sampler2D u_uTexture;
-        uniform sampler2D u_vTexture;
-        void main()
-        {
-            float y = texture2D(u_yTexture, v_texCoord).x;
-            float u = texture2D(u_uTexture, v_texCoord).x;
-            float v = texture2D(u_vTexture, v_texCoord).x;
+        s_defaultFragments[SHADER_YUV2RGB] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_yTexture;
+            uniform sampler2D u_uTexture;
+            uniform sampler2D u_vTexture;
+            void main()
+            {
+                float y = texture2D(u_yTexture, v_texCoord).x;
+                float u = texture2D(u_uTexture, v_texCoord).x;
+                float v = texture2D(u_vTexture, v_texCoord).x;
 
-            vec4 rgbColor = vec4(0, 0, 0, 1);
-            rgbColor.r = y + 1.13983 * (v - 0.5);
-            rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
-            rgbColor.b = y + 2.03211 * (u - 0.5);
+                vec4 rgbColor = vec4(0, 0, 0, 1);
+                rgbColor.r = y + 1.13983 * (v - 0.5);
+                rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
+                rgbColor.b = y + 2.03211 * (u - 0.5);
 
-            gl_FragColor = rgbColor;
-        }
-    );
+                gl_FragColor = rgbColor;
+            }
+        );
 
-    s_defaultFragments[SHADER_YUV2YUV] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_yTexture;
-        uniform sampler2D u_uTexture;
-        uniform sampler2D u_vTexture;
-        void main()
-        {
-            vec4 yuvColor = (0, 0, 0, 1);
+        s_defaultFragments[SHADER_YUV2YUV] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_yTexture;
+            uniform sampler2D u_uTexture;
+            uniform sampler2D u_vTexture;
+            void main()
+            {
+                vec4 yuvColor = (0, 0, 0, 1);
 
-            yuvColor.r = texture2D(u_yTexture, v_texCoord).x;
-            yuvColor.g = texture2D(u_uTexture, v_texCoord).x;
-            yuvColor.b = texture2D(u_vTexture, v_texCoord).x;
+                yuvColor.r = texture2D(u_yTexture, v_texCoord).x;
+                yuvColor.g = texture2D(u_uTexture, v_texCoord).x;
+                yuvColor.b = texture2D(u_vTexture, v_texCoord).x;
 
-            gl_FragColor = yuvColor;
-        }
-    );
+                gl_FragColor = yuvColor;
+            }
+        );
 
-    ///Tone Map Fragments
-    s_toneMapFragments[SHADER_RGB2RGB] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform sampler2D u_toneMap;
+        ///Tone Map Fragments
+        s_toneMapFragments[SHADER_RGB2RGB] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_texture;
+            uniform sampler2D u_toneMap;
 
-        void mapColor(inout vec4 pixelColor)
-        {
-            pixelColor = clamp(pixelColor, 0.0, 1.0);
-            
-            highp float blueColor = pixelColor.b * 63.0;
+            void mapColor(inout vec4 pixelColor)
+            {
+                pixelColor = clamp(pixelColor, 0.0, 1.0);
+                
+                highp float blueColor = pixelColor.b * 63.0;
 
-            highp vec2 coord1;
-            coord1.y = floor(floor(blueColor) / 8.0);
-            coord1.x = floor(blueColor) - (quad1.y * 8.0);
+                highp vec2 coord1;
+                coord1.y = floor(floor(blueColor) / 8.0);
+                coord1.x = floor(blueColor) - (quad1.y * 8.0);
 
-            highp vec2 coord2;
-            coord2.y = floor(ceil(blueColor) / 8.0);
-            coord2.x = ceil(blueColor) - (coord2.y * 8.0);
+                highp vec2 coord2;
+                coord2.y = floor(ceil(blueColor) / 8.0);
+                coord2.x = ceil(blueColor) - (coord2.y * 8.0);
 
-            highp vec2 texPos1;
-            texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos1;
+                texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec2 texPos2;
-            texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos2;
+                texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
-            highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
+                highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
+                highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
 
-            pixelColor = mix(newColor1, newColor2, fract(blueColor));
-        }
+                pixelColor = mix(newColor1, newColor2, fract(blueColor));
+            }
 
-        void main()
-        {
-            highp vec4 oriColor = texture2D(u_texture, v_texCoord);
-            mapColor(oriColor);
-            gl_FragColor = oriColor;
-        }
-    );
+            void main()
+            {
+                highp vec4 oriColor = texture2D(u_texture, v_texCoord);
+                mapColor(oriColor);
+                gl_FragColor = oriColor;
+            }
+        );
 
-    s_toneMapFragments[SHADER_RGB2YUV] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform sampler2D u_toneMap;
+        s_toneMapFragments[SHADER_RGB2YUV] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_texture;
+            uniform sampler2D u_toneMap;
 
-        void mapColor(inout vec4 pixelColor)
-        {
-            pixelColor = clamp(pixelColor, 0.0, 1.0);
-            
-            highp float blueColor = pixelColor.b * 63.0;
+            void mapColor(inout vec4 pixelColor)
+            {
+                pixelColor = clamp(pixelColor, 0.0, 1.0);
+                
+                highp float blueColor = pixelColor.b * 63.0;
 
-            highp vec2 coord1;
-            coord1.y = floor(floor(blueColor) / 8.0);
-            coord1.x = floor(blueColor) - (quad1.y * 8.0);
+                highp vec2 coord1;
+                coord1.y = floor(floor(blueColor) / 8.0);
+                coord1.x = floor(blueColor) - (quad1.y * 8.0);
 
-            highp vec2 coord2;
-            coord2.y = floor(ceil(blueColor) / 8.0);
-            coord2.x = ceil(blueColor) - (coord2.y * 8.0);
+                highp vec2 coord2;
+                coord2.y = floor(ceil(blueColor) / 8.0);
+                coord2.x = ceil(blueColor) - (coord2.y * 8.0);
 
-            highp vec2 texPos1;
-            texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos1;
+                texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec2 texPos2;
-            texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos2;
+                texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
-            highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
+                highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
+                highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
 
-            pixelColor = mix(newColor1, newColor2, fract(blueColor));
-        }
+                pixelColor = mix(newColor1, newColor2, fract(blueColor));
+            }
 
-        void main()
-        {
-            highp vec4 rgbColor = texture2D(u_texture, v_texCoord);
-            mapColor(rgbColor);
+            void main()
+            {
+                highp vec4 rgbColor = texture2D(u_texture, v_texCoord);
+                mapColor(rgbColor);
 
-            vec4 yuvColor = vec4(0, 0, 0, 1);
-            yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
-            yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
-            yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
-            
-            gl_FragColor = yuvColor;
-        }
-    );
+                vec4 yuvColor = vec4(0, 0, 0, 1);
+                yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
+                yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
+                yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
+                
+                gl_FragColor = yuvColor;
+            }
+        );
 
-    s_toneMapFragments[SHADER_YUV2RGB] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_yTexture;
-        uniform sampler2D u_uTexture;
-        uniform sampler2D u_vTexture;
-        uniform sampler2D u_toneMap;
+        s_toneMapFragments[SHADER_YUV2RGB] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_yTexture;
+            uniform sampler2D u_uTexture;
+            uniform sampler2D u_vTexture;
+            uniform sampler2D u_toneMap;
 
-        void mapColor(inout vec4 pixelColor)
-        {
-            pixelColor = clamp(pixelColor, 0.0, 1.0);
-            
-            highp float blueColor = pixelColor.b * 63.0;
+            void mapColor(inout vec4 pixelColor)
+            {
+                pixelColor = clamp(pixelColor, 0.0, 1.0);
+                
+                highp float blueColor = pixelColor.b * 63.0;
 
-            highp vec2 coord1;
-            coord1.y = floor(floor(blueColor) / 8.0);
-            coord1.x = floor(blueColor) - (quad1.y * 8.0);
+                highp vec2 coord1;
+                coord1.y = floor(floor(blueColor) / 8.0);
+                coord1.x = floor(blueColor) - (quad1.y * 8.0);
 
-            highp vec2 coord2;
-            coord2.y = floor(ceil(blueColor) / 8.0);
-            coord2.x = ceil(blueColor) - (coord2.y * 8.0);
+                highp vec2 coord2;
+                coord2.y = floor(ceil(blueColor) / 8.0);
+                coord2.x = ceil(blueColor) - (coord2.y * 8.0);
 
-            highp vec2 texPos1;
-            texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos1;
+                texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec2 texPos2;
-            texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos2;
+                texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
-            highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
+                highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
+                highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
 
-            pixelColor = mix(newColor1, newColor2, fract(blueColor));
-        }
+                pixelColor = mix(newColor1, newColor2, fract(blueColor));
+            }
 
-        void main()
-        {
-            highp float y = texture2D(u_yTexture, v_texCoord).x;
-            highp float u = texture2D(u_uTexture, v_texCoord).x;
-            highp float v = texture2D(u_vTexture, v_texCoord).x;
+            void main()
+            {
+                highp float y = texture2D(u_yTexture, v_texCoord).x;
+                highp float u = texture2D(u_uTexture, v_texCoord).x;
+                highp float v = texture2D(u_vTexture, v_texCoord).x;
 
-            highp vec4 rgbColor = vec4(0, 0, 0, 1);
-            rgbColor.r = y + 1.13983 * (v - 0.5);
-            rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
-            rgbColor.b = y + 2.03211 * (u - 0.5);
+                highp vec4 rgbColor = vec4(0, 0, 0, 1);
+                rgbColor.r = y + 1.13983 * (v - 0.5);
+                rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
+                rgbColor.b = y + 2.03211 * (u - 0.5);
 
-            mapColor(rgbColor);
-            gl_FragColor = rgbColor;
-        }
-    );
+                mapColor(rgbColor);
+                gl_FragColor = rgbColor;
+            }
+        );
 
-    s_toneMapFragments[SHADER_YUV2YUV] = TOSTRING(
-        varying mediump vec2 v_texCoord;
-        uniform sampler2D u_yTexture;
-        uniform sampler2D u_uTexture;
-        uniform sampler2D u_vTexture;
-        uniform sampler2D u_toneMap;
+        s_toneMapFragments[SHADER_YUV2YUV] = TOSTRING(
+            varying mediump vec2 v_texCoord;
+            uniform sampler2D u_yTexture;
+            uniform sampler2D u_uTexture;
+            uniform sampler2D u_vTexture;
+            uniform sampler2D u_toneMap;
 
-        void mapColor(inout vec4 pixelColor)
-        {
-            pixelColor = clamp(pixelColor, 0.0, 1.0);
-            
-            highp float blueColor = pixelColor.b * 63.0;
+            void mapColor(inout vec4 pixelColor)
+            {
+                pixelColor = clamp(pixelColor, 0.0, 1.0);
+                
+                highp float blueColor = pixelColor.b * 63.0;
 
-            highp vec2 coord1;
-            coord1.y = floor(floor(blueColor) / 8.0);
-            coord1.x = floor(blueColor) - (quad1.y * 8.0);
+                highp vec2 coord1;
+                coord1.y = floor(floor(blueColor) / 8.0);
+                coord1.x = floor(blueColor) - (quad1.y * 8.0);
 
-            highp vec2 coord2;
-            coord2.y = floor(ceil(blueColor) / 8.0);
-            coord2.x = ceil(blueColor) - (coord2.y * 8.0);
+                highp vec2 coord2;
+                coord2.y = floor(ceil(blueColor) / 8.0);
+                coord2.x = ceil(blueColor) - (coord2.y * 8.0);
 
-            highp vec2 texPos1;
-            texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos1;
+                texPos1.x = clamp((quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos1.y = clamp((quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec2 texPos2;
-            texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
-            texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
+                highp vec2 texPos2;
+                texPos2.x = clamp((quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.r), 0.0, 1.0);
+                texPos2.y = clamp((quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * pixelColor.g), 0.0, 1.0);
 
-            highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
-            highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
+                highp vec4 newColor1 = texture2D(u_toneMap, texPos1);
+                highp vec4 newColor2 = texture2D(u_toneMap, texPos2);
 
-            pixelColor = mix(newColor1, newColor2, fract(blueColor));
-        }
+                pixelColor = mix(newColor1, newColor2, fract(blueColor));
+            }
 
-        void main()
-        {
-            highp float y = texture2D(u_yTexture, v_texCoord).x;
-            highp float u = texture2D(u_uTexture, v_texCoord).x;
-            highp float v = texture2D(u_vTexture, v_texCoord).x;
+            void main()
+            {
+                highp float y = texture2D(u_yTexture, v_texCoord).x;
+                highp float u = texture2D(u_uTexture, v_texCoord).x;
+                highp float v = texture2D(u_vTexture, v_texCoord).x;
 
-            highp vec4 rgbColor = vec4(0, 0, 0, 1);
-            rgbColor.r = y + 1.13983 * (v - 0.5);
-            rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
-            rgbColor.b = y + 2.03211 * (u - 0.5);
+                highp vec4 rgbColor = vec4(0, 0, 0, 1);
+                rgbColor.r = y + 1.13983 * (v - 0.5);
+                rgbColor.g = y - 0.39465 * (u - 0.5) - 0.58060 * (v - 0.5);
+                rgbColor.b = y + 2.03211 * (u - 0.5);
 
-            mapColor(rgbColor);
+                mapColor(rgbColor);
 
-            vec4 yuvColor = vec4(0, 0, 0, 1);
-            yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
-            yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
-            yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
+                vec4 yuvColor = vec4(0, 0, 0, 1);
+                yuvColor.r = 0.299 * rgbColor.r + 0.587 * rgbColor.g + 0.114 * rgbColor.b;
+                yuvColor.g = -0.169 * rgbColor.r - 0.331 * rgbColor.g + 0.5 * rgbColor.b + 0.5;
+                yuvColor.b = 0.5 * rgbColor.r - 0.419 * rgbColor.g - 0.081 * rgbColor.b + 0.5;
 
-            gl_FragColor = yuvColor;
-        }
-    );
+                gl_FragColor = yuvColor;
+            }
+        );
+    }
 
 /////////////////////////////////////////////////////////////////
 /// class ProgramData
@@ -407,7 +416,7 @@ class ProgramData
         std::unordered_map<std::string, GLuint> _attrMap;
         std::unordered_map<std::string, GLuint> _vboMap;
         std::unordered_map<std::string, GLuint> _uniformMap;
-    }
+    };
 
     std::shared_ptr<ProgramData> ProgramData::create(const char *vertexCode, const char *fragmentCode)
     {
@@ -421,11 +430,11 @@ class ProgramData
     bool ProgramData::_init(const char *vertexCode, const char *fragmentCode)
     {
         GLuint vertexShader = 0;
-        vertexShader = LoadShader(GL_VERTEX_SHADER, vertexCode);
+        vertexShader = _compileShader(GL_VERTEX_SHADER, vertexCode);
         if (0 == vertexShader) {
             return 0;
         }
-        fragmentShader = LoadShader(GL_VERTEX_SHADER, fragmentCode);
+        GLuint fragmentShader = _compileShader(GL_VERTEX_SHADER, fragmentCode);
         if (0 == fragmentShader) {
             glDeleteShader(vertexShader);
             return 0;
@@ -468,7 +477,7 @@ class ProgramData
             return 0;
         }
 
-        glShaderSource(shader, 1, &shaderSrc, NULL);
+        glShaderSource(shader, 1, &shaderCode, NULL);
         glCompileShader(shader);
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
         if (!compiled) {
@@ -507,9 +516,9 @@ class ProgramData
                     _attrMap[attrName] = glGetAttribLocation(_program, attrName);
                 }
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     bool ProgramData::_parseUnifroms()
@@ -545,7 +554,7 @@ class ProgramData
 /////////////////////////////////////////////////////////////////
 /// class QuadRenderer
 
-static const MIN_CACHE_TEXTURE_SIZE = 256;
+static const int MIN_CACHE_TEXTURE_SIZE = 256;
 
     class QuadRenderer
     {
@@ -555,27 +564,25 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
 
         static bool initialize();
 
-        static void destroy()
+        static void destroy();
 
         static void setViewPort(float x, float y, float width, float height);
 
         static void clearColor(float r, float g, float b, float a);
 
-        static void setRenderTarget(std::shared_ptr<ImageData> imgData);
+        static void setRenderTarget(ImageData* imgData);
 
-        static void readRenderTarget(std::shared_ptr<ImageData> destImage);
+        static void readRenderTarget(ImageData* destImage);
 
         static void restoreRenderTarget();
 
-        static void drawLayer(std::shared_ptr<LayerData> curLayer, bool isYUVTarget);
+        static void drawLayer(LayerData* curLayer, bool isYUVTarget);
 
         static void resetUsingTextures();
 
     protected:
-        static bool _initContext();
         static bool _initPrograms();
         static bool _initVertex();
-        static void _destroyContext();
 
         static uint64_t _makeTextureKey(GLint internalFormat, GLint width, GLint height);
         static void _parseTextureKey(uint64_t key, GLint *internalFormat, GLint *width, GLint *height);
@@ -584,7 +591,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         static void _pushTexture(uint64_t key, GLuint tex);
         static void _useTexture(GLuint key, GLuint tex);
         static GLuint _uploadToTexture(unsigned char *srcBuffer, GLint internalFormat, GLint width, GLint height);
-        static std::vector<Gluint> _getTextureFromData(std::shared_ptr<ImageData> imgData);
+        static std::vector<GLuint> _getTextureFromData(ImageData* imgData);
 
         static void _uploadPositionData(float *srcData, int srcStride);
         static void _adjustPositionData(float *srcData, int srcStride, float *destData, int destStride);
@@ -603,7 +610,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         static float _positionData[4 * 2];
         static float _uvData[4 * 2];
         static GLuint _posVBO;
-        static GLuint _coordVBO;
+        static GLuint _uvVBO;
         static GLuint _fbo;
         static GLuint _prevFbo;
         static bool _initialized;
@@ -616,17 +623,17 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
 
     std::unordered_map<int, std::shared_ptr<ProgramData> > QuadRenderer::_defaultPrograms;
     std::unordered_map<int, std::shared_ptr<ProgramData> > QuadRenderer::_toneMapPrograms;
-    std::unordered_map<uint64_t, std::vector<GLuint> > QuadRenderer::_texurePool;
+    std::unordered_map<uint64_t, std::vector<GLuint> > QuadRenderer::_texturePool;
     std::unordered_map<uint64_t, std::vector<GLuint> > QuadRenderer::_usingTextures;
     std::vector<GLuint> _tempTextures;
     float QuadRenderer::_viewPort[4];
     float QuadRenderer::_positionData[4 * 2];
     float QuadRenderer::_uvData[4 * 2];
     GLuint QuadRenderer::_posVBO = 0;
-    GLuint QuadRenderer::_coordVBO = 0;
+    GLuint QuadRenderer::_uvVBO = 0;
     GLuint QuadRenderer::_fbo = 0;
     GLuint QuadRenderer::_prevFbo = 0;
-    GLuint QuadRenderer::_initialized = false;
+    bool QuadRenderer::_initialized = false;
 
     bool QuadRenderer::initialize()
     {
@@ -652,8 +659,8 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         _defaultPrograms.clear();
         _toneMapPrograms.clear();
         for (auto pool : _texturePool) {
-            for (size_t i=0; i<pool->second.size(); ++i) {
-                GLuint tex = pool->second[i];
+            for (size_t i=0; i<pool.second.size(); ++i) {
+                GLuint tex = pool.second[i];
                 glDeleteTextures(1, &tex);
             }
         }
@@ -674,22 +681,22 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
             _fbo = 0;
         }
 
-        _destroyContext();
-
         _initialized = false;
     }
 
     bool QuadRenderer::_initPrograms()
     {
-        _defaultPrograms[SHADER_RGB2RGB] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_RGB2RGB]);
-        _defaultPrograms[SHADER_RGB2YUV] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_RGB2YUV]);
-        _defaultPrograms[SHADER_YUV2RGB] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_YUV2RGB]);
-        _defaultPrograms[SHADER_YUV2YUV] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_YUV2YUV]);
+        _fillFragmentsCode();
 
-        _toneMapPrograms[SHADER_RGB2RGB] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_RGB2RGB]);
-        _toneMapPrograms[SHADER_RGB2YUV] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_RGB2YUV]);
-        _toneMapPrograms[SHADER_YUV2RGB] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_YUV2RGB]);
-        _toneMapPrograms[SHADER_YUV2YUV] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_YUV2YUV]);
+        _defaultPrograms[SHADER_RGB2RGB] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_RGB2RGB].c_str());
+        _defaultPrograms[SHADER_RGB2YUV] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_RGB2YUV].c_str());
+        _defaultPrograms[SHADER_YUV2RGB] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_YUV2RGB].c_str());
+        _defaultPrograms[SHADER_YUV2YUV] = ProgramData::create(s_vertexShader, s_defaultFragments[SHADER_YUV2YUV].c_str());
+
+        _toneMapPrograms[SHADER_RGB2RGB] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_RGB2RGB].c_str());
+        _toneMapPrograms[SHADER_RGB2YUV] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_RGB2YUV].c_str());
+        _toneMapPrograms[SHADER_YUV2RGB] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_YUV2RGB].c_str());
+        _toneMapPrograms[SHADER_YUV2YUV] = ProgramData::create(s_vertexShader, s_toneMapFragments[SHADER_YUV2YUV].c_str());
 
         //TODO:有待验证创建Program的错误
         return true;
@@ -716,6 +723,8 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         glBindBuffer(GL_ARRAY_BUFFER, _uvVBO);
         glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), _uvData, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        return true;
     }
 
     uint64_t QuadRenderer::_makeTextureKey(GLint internalFormat, GLint width, GLint height)
@@ -743,7 +752,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
     GLuint QuadRenderer::_genTexture(GLint internalFormat, GLint width, GLint height)
     {
         GLuint tex;
-        glGenTexture(1, &tex);
+        glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -759,7 +768,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         if (_texturePool.end() != poolItt && !poolItt->second.empty()) {
             tex = poolItt->second.back();
         } else {
-            tex = _genTexture(internalFormat, width, height));
+            tex = _genTexture(internalFormat, width, height);
         }
         
         if (width >= MIN_CACHE_TEXTURE_SIZE && height >= MIN_CACHE_TEXTURE_SIZE) {
@@ -799,8 +808,8 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
     void QuadRenderer::resetUsingTextures()
     {
         for (auto pool : _usingTextures) {
-            for (size_t i=0; i<pool->second.size(); ++i) {
-                _pushTexture(pool->first, pool->second[i]);
+            for (size_t i=0; i<pool.second.size(); ++i) {
+                _pushTexture(pool.first, pool.second[i]);
             }
         }
         _usingTextures.clear();
@@ -817,9 +826,11 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         glBindTexture(GL_TEXTURE_2D, destTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, srcBuffer);
         glBindTexture(GL_TEXTURE_2D, destTexture);
+
+        return destTexture;
     }
 
-    std::vector<GLuint> QuadRenderer::_getTextureFromData(std::shared_ptr<ImageData> imgData)
+    std::vector<GLuint> QuadRenderer::_getTextureFromData(ImageData* imgData)
     {
         std::vector<GLuint> texVec;
         do {
@@ -828,12 +839,12 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
             }
             
             GLint internalFormat = 0;
-            switch(imgData->_pixelFormat) {
+            switch(imgData->pixelFormat) {
             case PIXEL_FORMAT_RGB:
                 internalFormat = GL_RGB;
                 break;
             case PIXEL_FORMAT_RGBA:
-                internalFromat = GL_RGBA;
+                internalFormat = GL_RGBA;
                 break;
             case PIXEL_FORMAT_YV12:
             //case PIXEL_FORMAT_NV12:
@@ -846,9 +857,9 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
                 break;
             }
 
-            GLint width = (GLint)imgData->_width;
-            GLint height = (GLint)imgData->_height;
-            unsigned char *dataBuffer = imgData->_pixelBuffer.get();
+            GLint width = (GLint)imgData->width;
+            GLint height = (GLint)imgData->height;
+            unsigned char *dataBuffer = imgData->pixelBuffer;
             texVec.push_back(_uploadToTexture(dataBuffer, internalFormat, width, height));
             if (GL_LUMINANCE != internalFormat) {
                 break;
@@ -893,16 +904,16 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    void QuadRenderer::setRenderTarget(std::shared_ptr<ImageData> imgData)
+    void QuadRenderer::setRenderTarget(ImageData* imgData)
     {
-        if (!imgData.get()) {
+        if (!imgData) {
             return;
         }
 
         GLint internalFormat = GL_RGB;
-        GLint width = (GLint)imgData->_width;
-        GLint height = (GLint)imgData->_height;
-        switch(imgData->_pixelFormat) {
+        GLint width = (GLint)imgData->width;
+        GLint height = (GLint)imgData->height;
+        switch(imgData->pixelFormat) {
         case PIXEL_FORMAT_RGB:
         case PIXEL_FORMAT_YUV444_INTERLEAVED:
             internalFormat = GL_RGB;
@@ -913,7 +924,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         default:
             return;
         }
-        GLuint tex = _popTexture(_makeTextureKey(internalFormat, width, height));
+        GLuint tex = _popTexture(internalFormat, width, height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
@@ -922,14 +933,14 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         }
     }
 
-    void QuadRenderer::readRenderTarget(std::shared_ptr<ImageData> imgData)
+    void QuadRenderer::readRenderTarget(ImageData* imgData)
     {
-        if (!imgData.get()) {
+        if (!imgData) {
             return;
         }
         
         GLenum format = GL_RGB;
-        switch(imgData->_pixelFormat) {
+        switch(imgData->pixelFormat) {
         case PIXEL_FORMAT_RGB:
         case PIXEL_FORMAT_YUV444_INTERLEAVED:
             format = GL_RGB;
@@ -941,7 +952,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
             return;
         }
 
-        glReadPixels(0, 0, imgData->_width, imgData->_height, format, GL_UNSIGNED_BYTE, imgData->_pixelbuffer.get());
+        glReadPixels(0, 0, imgData->width, imgData->height, format, GL_UNSIGNED_BYTE, imgData->pixelBuffer);
     }
 
     void QuadRenderer::restoreRenderTarget()
@@ -951,13 +962,13 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         glBindFramebuffer(GL_FRAMEBUFFER, _prevFbo);
     }
 
-    void QuadRenderer::drawLayer(std::shared_ptr<LayerData> curLayer, bool isYUVTarget = false)
+    void QuadRenderer::drawLayer(LayerData* curLayer, bool isYUVTarget = false)
     {
-        if (!curLayer.get()) {
+        if (!curLayer) {
             return;
         }
 
-        std::vector<GLuint> texs = _getTextureFromData(curLayer->_layerImage);
+        std::vector<GLuint> texs = _getTextureFromData(curLayer->layerImage);
         if (texs.empty()) {
             return;
         }
@@ -965,7 +976,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         int programType = SHADER_RGB2RGB;
         bool isYUVSource = false;
         if (isYUVTarget) {
-            switch(curLayer->_pixelFormat) {
+            switch(curLayer->layerImage->pixelFormat) {
             case PIXEL_FORMAT_RGB:
             case PIXEL_FORMAT_RGBA:
                 programType = SHADER_RGB2YUV;
@@ -978,7 +989,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
                 break;
             }
         } else {
-            switch(curLayer->_pixelFormat) {
+            switch(curLayer->layerImage->pixelFormat) {
             case PIXEL_FORMAT_RGB:
             case PIXEL_FORMAT_RGBA:
                 programType = SHADER_RGB2RGB;
@@ -992,7 +1003,7 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
             }
         }
 
-        std::vector<GLuint> mapTexs = _getTextureFromData(curLayer->_toneMapImage);
+        std::vector<GLuint> mapTexs = _getTextureFromData(curLayer->mapImage);
         std::shared_ptr<ProgramData> curProgram;
         if (mapTexs.empty()) {
             curProgram = _defaultPrograms[programType];
@@ -1000,18 +1011,18 @@ static const MIN_CACHE_TEXTURE_SIZE = 256;
         } else {
             curProgram = _toneMapPrograms[programType];
             curProgram->use();
-            glUniform1i(curProgram->_unifromMap["u_toneMap"], mapTexs[0]);
+            glUniform1i(curProgram->_uniformMap["u_toneMap"], mapTexs[0]);
         }
 
         if (isYUVSource) {
-            glUniform1i(curProgram->_uniformMap["u_yTexture"], texs[0]]);
-            glUniform1i(curProgram->_uniformMap["u_uTexture"], texs[1]]);
-            glUniform1i(curProgram->_uniformMap["u_vTexture"], texs[2]]);
+            glUniform1i(curProgram->_uniformMap["u_yTexture"], texs[0]);
+            glUniform1i(curProgram->_uniformMap["u_uTexture"], texs[1]);
+            glUniform1i(curProgram->_uniformMap["u_vTexture"], texs[2]);
         } else {
-            glUniform1i(curProgram->_uniformMap["u_vTexture"], texs[0]]);
+            glUniform1i(curProgram->_uniformMap["u_vTexture"], texs[0]);
         }
         
-        _uploadPositionData(curLayer->_positionData, 2);
+        _uploadPositionData(curLayer->positionData, 2);
 
         GLuint curLocation = curProgram->_attrMap["a_position"];
         glBindBuffer(GL_ARRAY_BUFFER, _posVBO);
@@ -1040,12 +1051,12 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
 #if defined(__ANDROID__)
     static void _defaultLogInfo(const char* log)
     {
-        android_printLog(ANDROID_LOG_INFO, "%s", log);
+        __android_log_print(ANDROID_LOG_INFO, "-frameprocessor.cpp-", "%s", log);
     }
 
     static void _defaultLogError(const char* log)
     {
-        android_printLog(ANDROID_LOG_ERROR, "%s", log);
+        __android_log_print(ANDROID_LOG_ERROR, "-frameprocessor.cpp-", "%s", log);
     }
 
     static bool _initContext(int width, int height)
@@ -1055,7 +1066,7 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
             return false;
         }
         //Choose Config
-        const EGLinit attribs[] = {
+        const EGLint attribs[] = {
             EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
             EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
             EGL_BLUE_SIZE, 8,
@@ -1097,7 +1108,7 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
 
     static void _destroyContext()
     {
-        eglMake(s_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglMakeCurrent(s_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroyContext(s_eglDisplay, s_eglContext);
         eglDestroySurface(s_eglDisplay, s_eglSurface);
         eglTerminate(s_eglDisplay);
@@ -1106,6 +1117,9 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
         s_eglSurface = EGL_NO_SURFACE;
         s_eglContext = EGL_NO_CONTEXT;
     }
+
+    std::function<void(const char*)> FrameProcessor::logInfoCallback = std::bind(_defaultLogInfo, std::placeholders::_1);
+    std::function<void(const char*)> FrameProcessor::logErrorCallback = std::bind(_defaultLogError, std::placeholders::_1);
 
     bool FrameProcessor::initialize(int width, int height)
     {
@@ -1182,7 +1196,7 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
 
     static bool _checkOutputFormat(unsigned int pixelFormat)
     {
-        switch(pixelForamt) {
+        switch(pixelFormat) {
         case PIXEL_FORMAT_RGB:
         case PIXEL_FORMAT_RGBA:
         case PIXEL_FORMAT_YUV444_INTERLEAVED:
@@ -1198,15 +1212,15 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
             FrameProcessor::logErrorCallback("FrameProcessor.processFrame:FrameProcessor is not initialized!");
             return;
         }
-        if (srcLayers.empty() || !destImage.get() || !_checkOutputFormat(destImage->_pixelFormat)) {
-            return false;
+        if (srcLayers.empty() || !destImage || !_checkOutputFormat(destImage->pixelFormat)) {
+            return;
         }
         
         QuadRenderer::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
         QuadRenderer::setRenderTarget(destImage);
 
         bool isYUVTarget = false;
-        if (PIXEL_FORMAT_YUV444_INTERLEAVED == destImage->_pixelFormat) {
+        if (PIXEL_FORMAT_YUV444_INTERLEAVED == destImage->pixelFormat) {
             isYUVTarget = true;
         }
         for(size_t i=0; i<srcLayers.size(); ++i) {
@@ -1215,9 +1229,9 @@ static thread_local EGLSurface s_eglSurface = EGL_NO_SURFACE;
 
         QuadRenderer::readRenderTarget(destImage);
         QuadRenderer::restoreRenderTarget();
-        QuadRenderer::resetUsingTexture();
+        QuadRenderer::resetUsingTextures();
 
-        return true;
+        return;
     }
         
     void FrameProcessor::drawFrame(const std::vector<LayerData*> &srcLayers)
