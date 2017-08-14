@@ -339,7 +339,11 @@ void MP4RtpHintTrack::GetPayload(
                 pSlash = strchr(pSlash, '/');
                 if (pSlash != NULL) {
                     pSlash++;
-                    if (pSlash != '\0') {
+                    //FIXME:Need to check it.
+                    //Author:Yang Fanghua
+                    //Date:2017-8-14
+                    if (*pSlash != '\0') {
+                    //if (pSlash != '\0') { //Original code. Commented by Yang Fanghua.
                         length = (uint32_t)strlen(pRtpMap) - (pSlash - pRtpMap);
                         *ppEncodingParams = (char *)MP4Calloc(length + 1);
                         strncpy(*ppEncodingParams, pSlash, length);

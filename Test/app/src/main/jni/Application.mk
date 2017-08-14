@@ -2,7 +2,7 @@ APP_ABI := armeabi-v7a
 
 APP_STL := gnustl_static
 
-APP_CPPFLAGS := -frtti
+APP_CPPFLAGS := -frtti -std=c++11 -Wno-c++11-narrowing
 
 APP_MODULES += mp4v2
 APP_MODULES += render
