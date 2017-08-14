@@ -79,16 +79,17 @@ namespace paomiantv {
 
         BOOL32 getNextVSpample(BOOL32 &bIsLastSample, u8 *&buff, u32 &size, u64 &starttime,
                                u64 &duration,
-                               u64 &renderoffset, BOOL &isSync);
+                               u64 &renderoffset, BOOL &isSync, BOOL32 &isSPS, BOOL32 &isPPS);
+
+        BOOL32 drawVFrame(u8 *data, s32 width, s32 height);
+
+        BOOL32 playAFrame();
 
         BOOL32
         getNextASpample(BOOL32 &bIsLastSample, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                         u64 &renderoffset, BOOL &isSync);
 
         void seekTo(s32 nIndex);
-
-
-        inline CRenderer *getRenderer();
 
         inline s8 *getDstPath();
 
@@ -106,6 +107,7 @@ namespace paomiantv {
 
         MP4FileHandle m_Handle;
         ILock *m_pLock;
+        ILock *m_pRenderLock;
 
         FailedCB m_cbOnFailed;
         SuccessCB m_cbOnSuccess;
@@ -118,11 +120,8 @@ namespace paomiantv {
         MP4SampleId m_uCurrASampleId;
         s32 m_nCurrVClipIndex;
         MP4SampleId m_uCurrVSampleId;
+        BOOL32 m_bIsSPSSampleCurr;
     };
-
-    inline CRenderer *CStoryboard::getRenderer() {
-        return m_pRenderer;
-    }
 
     inline s8 *CStoryboard::getDstPath() {
         return m_pchDstPath;

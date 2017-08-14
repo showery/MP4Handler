@@ -1,6 +1,7 @@
 package cn.paomiantv.mediasdk;
 
 import android.os.Build;
+import android.util.Log;
 
 /**
  * Created by John on 2017/7/20.
@@ -12,18 +13,22 @@ public class PMEngine {
         switch(Build.VERSION.SDK_INT)
         {
             case Build.VERSION_CODES.JELLY_BEAN:
-                System.loadLibrary("native_codec16");
+                System.load("/data/data/cn.paomiantv.test/lib/libnative_codec19.so");
+//                System.loadLibrary("native_codec16");
                 break;
             case Build.VERSION_CODES.JELLY_BEAN_MR1:
-                System.loadLibrary("native_codec17");
+                System.load("/data/data/cn.paomiantv.test/lib/libnative_codec19.so");
+//                System.loadLibrary("native_codec17");
                 break;
             case Build.VERSION_CODES.JELLY_BEAN_MR2:
-                System.loadLibrary("native_codec18");
+                System.load("/data/data/cn.paomiantv.test/lib/libnative_codec19.so");
+//                System.loadLibrary("native_codec18");
                 break;
             case Build.VERSION_CODES.KITKAT:
-                System.loadLibrary("native_codec19");
+                System.load("/data/data/cn.paomiantv.test/lib/libnative_codec19.so");
                 break;
         }
+        System.loadLibrary("codec");
         System.loadLibrary("mp4v2");
         System.loadLibrary("render");
         System.loadLibrary("mediasdk");
@@ -43,7 +48,8 @@ public class PMEngine {
     }
 
     public boolean init() {
-        return _init();
+        Log.e("PMEngine","SDK_VERSION"+Build.VERSION.SDK_INT);
+        return _init(Build.VERSION.SDK_INT);
     }
 
     public void uninit() {
@@ -74,7 +80,7 @@ public class PMEngine {
         _cancel();
     }
 
-    private native boolean _init();
+    private native boolean _init(int version);
 
     private native void _uninit();
 

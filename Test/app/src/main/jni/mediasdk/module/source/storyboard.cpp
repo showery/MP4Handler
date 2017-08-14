@@ -28,10 +28,12 @@ namespace paomiantv {
               m_uCurrASampleId(0),
               m_nCurrVClipIndex(0),
               m_uCurrVSampleId(0),
+              m_bIsSPSSampleCurr(FALSE),
               m_pRenderer(NULL),
               m_Handle(MP4_INVALID_FILE_HANDLE) {
         USE_LOG;
         m_pLock = new CLock;
+        m_pRenderLock = new CLock;
         m_ptBGMClipParam = new TClipParam;
         m_pchDstPath = (s8 *) malloc(MAX_LEN_FILE_PATH);
         m_pchSrcBGM = (s8 *) malloc(MAX_LEN_FILE_PATH);
@@ -43,6 +45,7 @@ namespace paomiantv {
         free(m_pchDstPath);
         free(m_pchSrcBGM);
         delete m_ptBGMClipParam;
+        delete m_pRenderLock;
         delete m_pLock;
     }
 
@@ -212,11 +215,15 @@ namespace paomiantv {
     }
 
     void CStoryboard::detachRenderer() {
-        m_pRenderer = NULL;
+        BEGIN_AUTOLOCK(m_pRenderLock);
+            m_pRenderer = NULL;
+        END_AUTOLOCK;
     }
 
     void CStoryboard::attachRenderer(CRenderer *pRenderer) {
-        m_pRenderer = pRenderer;
+        BEGIN_AUTOLOCK(m_pRenderLock);
+            m_pRenderer = pRenderer;
+        END_AUTOLOCK;
     }
 
     void CStoryboard::handleFailed(s32 nErr, s8 *pchDescription) {
@@ -238,40 +245,57 @@ namespace paomiantv {
     void CStoryboard::seekTo(s32 nIndex) {
         BEGIN_AUTOLOCK(m_pLock);
             m_nStartClipIndex = nIndex;
+            m_nCurrVClipIndex = nIndex;
+            m_nCurrAClipIndex = nIndex;
+            m_uCurrASampleId = 0;
+            m_uCurrVSampleId = 0;
         END_AUTOLOCK;
     }
 
     BOOL32 CStoryboard::getNextVSpample(BOOL32 &bIsLastSample, u8 *&buff, u32 &size, u64 &starttime,
                                         u64 &duration,
-                                        u64 &renderoffset, BOOL &isSync) {
+                                        u64 &renderoffset, BOOL &isSync,BOOL32& isSPS,BOOL32 &isPPS) {
         BOOL32 re = FALSE;
         BEGIN_AUTOLOCK(m_pLock);
-            s32 nVSampleNum = 0;
-            s32 nClipCount = m_vClips.size();
-            for (s32 i = 0; i < nClipCount; i++) {
-                nVSampleNum += m_vClips[i]->getVSampleNum();
-            }
-            if (m_nCurrVClipIndex == nClipCount - 1 &&
-                m_uCurrVSampleId == m_vClips[m_nCurrVClipIndex]->getVSampleEndId()) {
-                bIsLastSample = TRUE;
-            }
-            if (m_nCurrVClipIndex >= nClipCount || m_nCurrVClipIndex < m_nStartClipIndex) {
-                m_nCurrVClipIndex = m_nStartClipIndex;
-            }
-            if (m_uCurrVSampleId == 0) {
-                m_uCurrVSampleId = m_vClips[m_nCurrVClipIndex]->getVSampleStartId();
-            }
 
-            re = m_vClips[m_nCurrVClipIndex]->getVidoeSampleById(m_uCurrVSampleId, buff, size,
-                                                                starttime, duration, renderoffset,
-                                                                isSync);
-            m_uCurrVSampleId++;
-            if (m_uCurrVSampleId > m_vClips[m_nCurrVClipIndex]->getVSampleEndId()) {
-                m_nCurrVClipIndex++;
-                if (m_nCurrVClipIndex >= nClipCount) {
-                    m_nCurrVClipIndex = m_nStartClipIndex;
+            s32 nClipCount = m_vClips.size();
+//            s32 nVSampleNum = 0;
+//            for (s32 i = 0; i < nClipCount; i++) {
+//                nVSampleNum += m_vClips[i]->getVSampleNum();
+//            }
+
+            if (m_uCurrVSampleId == 0) {
+                if(m_bIsSPSSampleCurr){
+                    re = m_vClips[m_nCurrVClipIndex]->getVideoPPS(buff, size);
+                    m_bIsSPSSampleCurr = FALSE;
+                    m_uCurrVSampleId = m_vClips[m_nCurrVClipIndex]->getVSampleStartId();
+                    isPPS = TRUE;
+                }else{
+                    re = m_vClips[m_nCurrVClipIndex]->getVideoSPS(buff, size);
+                    m_bIsSPSSampleCurr = TRUE;
+                    isSPS = TRUE;
                 }
-                m_uCurrVSampleId = m_vClips[m_nCurrVClipIndex]->getVSampleStartId();
+            }else{
+                re = m_vClips[m_nCurrVClipIndex]->getVidoeSampleById(m_uCurrVSampleId, buff, size,
+                                                                     starttime, duration, renderoffset,
+                                                                     isSync);
+
+                if (m_nCurrVClipIndex == nClipCount - 1  ) {
+                    if(m_uCurrVSampleId == m_vClips[m_nCurrVClipIndex]->getVSampleEndId()){
+                        bIsLastSample = TRUE;
+                        m_nCurrVClipIndex = m_nStartClipIndex;
+                        m_uCurrVSampleId = 0;
+                    }else{
+                        m_uCurrVSampleId++;
+                    }
+                }else{
+                    if(m_uCurrVSampleId == m_vClips[m_nCurrVClipIndex]->getVSampleEndId()){
+                        m_nCurrVClipIndex++;
+                        m_uCurrVSampleId = 0;
+                    } else{
+                        m_uCurrVSampleId++;
+                    }
+                }
             }
 
         END_AUTOLOCK;
@@ -301,8 +325,8 @@ namespace paomiantv {
             }
 
             re = m_vClips[m_nCurrAClipIndex]->getAudioSampleById(m_uCurrASampleId, buff, size,
-                                                                starttime, duration, renderoffset,
-                                                                isSync);
+                                                                 starttime, duration, renderoffset,
+                                                                 isSync);
 
             m_uCurrASampleId++;
             if (m_uCurrASampleId > m_vClips[m_nCurrAClipIndex]->getASampleEndId()) {
@@ -322,5 +346,30 @@ namespace paomiantv {
 
         END_AUTOLOCK;
         return re;
+    }
+
+    BOOL32 CStoryboard::drawVFrame(u8 *data, s32 width, s32 height) {
+        BOOL32 re = FALSE;
+        BEGIN_AUTOLOCK(m_pRenderLock);
+            do {
+                if (data == NULL || width == 0 || height == 0) {
+                    LOGE("data is invalid");
+                    break;
+                }
+
+                if (m_pRenderer != NULL) {
+                    m_pRenderer->SetFrame(data, width, height);
+                } else {
+                    LOGE("renderer is NULL");
+                    break;
+                }
+                re = TRUE;
+            } while (0);
+        END_AUTOLOCK;
+        return re;
+    }
+
+    BOOL32 CStoryboard::playAFrame() {
+        return 0;
     }
 } // namespace paomiantv

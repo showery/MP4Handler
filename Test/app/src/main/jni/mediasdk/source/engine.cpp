@@ -16,19 +16,25 @@
 #include "engine.h"
 #include "autolog.h"
 #include "producer.h"
+#include "vcodec.h"
+
+extern int g_sdkVersion;
 
 namespace paomiantv {
 
-    CEngine::CEngine() {
+    CEngine::CEngine() : m_pProducer(NULL), m_pStoryboard(NULL) {
         USE_LOG;
+
     }
 
     CEngine::~CEngine() {
         USE_LOG;
+        cancel();
     }
 
-    BOOL32 CEngine::init() {
+    BOOL32 CEngine::init(s32 nVersion) {
         MP4SetLogCallback(log_cb);
+        g_sdkVersion = nVersion;
         return TRUE;
     }
 
@@ -56,26 +62,28 @@ namespace paomiantv {
     }
 
     void CEngine::start(BOOL32 bIsSave) {
-        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+        if (m_pProducer != NULL) {
             m_pProducer->start(bIsSave);
+        } else {
+            LOGE("data source is null");
         }
 
     }
 
     void CEngine::resume() {
-        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+        if (m_pProducer != NULL) {
             m_pProducer->resume();
         }
     }
 
     void CEngine::pause() {
-        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+        if (m_pProducer != NULL) {
             m_pProducer->pause();
         }
     }
 
     void CEngine::cancel() {
-        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+        if (m_pProducer != NULL) {
             m_pProducer->stop();
             delete m_pProducer;
             m_pProducer = NULL;
@@ -83,16 +91,21 @@ namespace paomiantv {
     }
 
     void CEngine::seekTo(s32 nClipIndex) {
-        if (m_pStoryboard != NULL || m_pProducer != NULL) {
+        if (m_pProducer != NULL) {
             m_pProducer->seekTo(nClipIndex);
         }
     }
 
     void CEngine::setDataSource(CStoryboard *pStoryboard) {
+        if (m_pProducer != NULL) {
+            LOGW("the engine is started");
+            m_pProducer->stop();
+            delete m_pProducer;
+            m_pProducer = NULL;
+        }
         if (pStoryboard != NULL) {
             m_pStoryboard = pStoryboard;
             m_pProducer = new CProducer(pStoryboard);
         }
-
     }
 }

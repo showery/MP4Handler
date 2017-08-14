@@ -15,25 +15,22 @@
 #include "vcontroller.h"
 #include "vprocessor.h"
 #include "constant.h"
+#include "frame.h"
 
 namespace paomiantv {
 
     CVController::CVController(CStoryboard *pStoryboard, BOOL32 bIsSave)
             : CController(pStoryboard, bIsSave) {
         USE_LOG;
-        m_pProcessor = new CVProcessor;
-        m_pbyVBuf = (u8 *) malloc(MAX_VIDEO_FRAME_BUFFER_SIZE);
+        m_pH264Dec = new CH264Dec(pStoryboard,bIsSave);
     }
 
     CVController::~CVController() {
         USE_LOG;
-        if (m_pProcessor != NULL) {
-            delete m_pProcessor;
-            m_pProcessor = NULL;
-        }
-        if (m_pbyVBuf != NULL) {
-            free(m_pbyVBuf);
-            m_pbyVBuf = NULL;
+        stop();
+        if (m_pH264Dec != NULL) {
+            delete m_pH264Dec;
+            m_pH264Dec = NULL;
         }
     }
 
@@ -47,23 +44,11 @@ namespace paomiantv {
             }
             if (!m_bIsStopped) {
                 m_pLock->unlock();
-                BOOL32 bIsLastSample = FALSE;
-                BOOL bIsSync = FALSE;
-                u32 uSize = 0;
-                u64 ullStartTm = 0;
-                u64 ullDuration = 0;
-                u64 ullRenderOffset = 0;
-                m_pStoryboard->getNextVSpample(bIsLastSample, m_pbyVBuf, uSize, ullStartTm,
-                                               ullDuration, ullRenderOffset, bIsSync);
+                TFrame* ptFrame = new TFrame;
+                m_pStoryboard->getNextVSpample(ptFrame->isLast, ptFrame->data, ptFrame->size, ptFrame->startTm,
+                                               ptFrame->duration, ptFrame->renderOffset, ptFrame->isSync,ptFrame->isSPS,ptFrame->isPPS);
                 //decode
-
-                //transform
-
-                if (m_bIsSave) {
-                    //encode
-                } else {
-                    //render
-                }
+                m_pH264Dec->addToQueue(ptFrame);
                 m_pLock->lock();
             }
         }

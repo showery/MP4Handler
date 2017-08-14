@@ -30,13 +30,13 @@ namespace paomiantv {
 
     CProducer::~CProducer() {
         stop();
-        if (m_pVController != NULL) {
-            delete m_pVController;
-            m_pVController = NULL;
-        }
         if (m_pAController != NULL) {
             delete m_pAController;
             m_pAController = NULL;
+        }
+        if (m_pVController != NULL) {
+            delete m_pVController;
+            m_pVController = NULL;
         }
         if (m_pLock != NULL) {
             delete m_pLock;
@@ -57,7 +57,7 @@ namespace paomiantv {
 
     void CProducer::stop() {
         BEGIN_AUTOLOCK(m_pLock);
-            if (!m_bIsStarted) {
+            if (m_bIsStarted) {
                 m_pAController->stop();
                 m_pVController->stop();
                 m_bIsStarted = FALSE;

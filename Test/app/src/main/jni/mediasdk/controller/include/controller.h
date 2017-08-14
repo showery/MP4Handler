@@ -33,7 +33,7 @@ namespace paomiantv {
         virtual ~CController();
 
     protected:
-        virtual int run() = 0;
+        virtual int run();
 
         BOOL32 m_bIsSave;
         CStoryboard *m_pStoryboard;

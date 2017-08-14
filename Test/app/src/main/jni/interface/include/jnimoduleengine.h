@@ -29,6 +29,7 @@ namespace paomiantv {
     class CJNIModuleEngine : public CJNIModule {
     private:
         CEngine *m_pEngine;
+        static CLock m_SingleInstanceLock;
     public:
 
         static TJavaClazzParam *GetJavaClazzParam();
@@ -47,7 +48,7 @@ namespace paomiantv {
 
         virtual ~CJNIModuleEngine();
 
-        static jboolean jni_init(JNIEnv *env, jobject jengine);
+        static jboolean jni_init(JNIEnv *env, jobject jengine, jint jversion);
 
         static void jni_uninit(JNIEnv *env, jobject jengine);
 

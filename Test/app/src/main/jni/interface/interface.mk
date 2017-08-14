@@ -1,18 +1,22 @@
 LOCAL_PATH:= $(call my-dir)
+
 include $(CLEAR_VARS)
 LOCAL_MODULE:= interface
 INTERFACE_SRC_DIR    := source
 INTERFACE_INC_DIR    := include
 COMM_DIR    		 := ../common/include
 RENDER_DIR    	     := ../render/include
+CODEC_DIR    	     := ../codec/include
 MEDIASDK_DIR    	 := ../mediasdk/include \
 				../mediasdk/module/include \
 				../mediasdk/controller/include \
-				../mediasdk/processor/include
+				../mediasdk/processor/include \
+				../mediasdk/codec/include
 
 MP4V2_DIR    	 	 := ../mp4v2/include
 INC_PATH    	 := $(INTERFACE_INC_DIR)\
 			$(RENDER_DIR) \
+			$(CODEC_DIR) \
 			$(MEDIASDK_DIR) \
 			$(MP4V2_DIR) \
 			$(COMM_DIR)
@@ -36,7 +40,7 @@ ifeq ($(PWLIB_SUPPORT),1)
 endif
 
 LOCAL_PRELINK_MODULE:= false
-LOCAL_SHARED_LIBRARIES := mp4v2 render mediasdk
-LOCAL_LDLIBS += -lz -llog -ldl
+LOCAL_SHARED_LIBRARIES := mp4v2 render codec mediasdk
+LOCAL_LDLIBS += -lz -llog -ldl -lGLESv2 -lEGL
 
 include $(BUILD_SHARED_LIBRARY)

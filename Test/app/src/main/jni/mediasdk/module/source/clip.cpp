@@ -159,6 +159,22 @@ namespace paomiantv {
         return re;
     }
 
+    BOOL CClip::getVideoSPS(u8 *&sps, u32 &size) {
+        BOOL re = false;
+        BEGIN_AUTOLOCK(m_pLock);
+            re = m_pParser->getVideoSPS(sps, size);
+        END_AUTOLOCK;
+        return re;
+    }
+
+    BOOL CClip::getVideoPPS(u8 *&pps, u32 &size) {
+        BOOL re = false;
+        BEGIN_AUTOLOCK(m_pLock);
+            re = m_pParser->getVideoPPS(pps, size);
+        END_AUTOLOCK;
+        return re;
+    }
+
     BOOL CClip::getVidoeSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime,
 
                                      u64 &duration, u64 &renderoffset, BOOL &isSync) {

@@ -44,6 +44,8 @@ namespace paomiantv {
         CStoryboard *m_pStoryboard;
         jmethodID m_ajmtd[4];
         std::vector<CJNIModuleClip *> m_vJNIClips;
+        jobject jrenderer;
+        static CLock m_SingleInstanceLock;
 
     public:
         static CJNIModuleStoryboard *CreateJniStoryboard(JNIEnv *env, jobject jStoryboard);

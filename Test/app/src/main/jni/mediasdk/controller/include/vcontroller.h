@@ -21,20 +21,18 @@
 #include "stdlib.h"
 #include "transparam.h"
 #include "thread.h"
-#include "vprocessor.h"
 #include "storyboard.h"
 #include "controller.h"
+#include "h264dec.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CVController : public CController
-{
+    class CVController : public CController {
 
-  public:
-    CVController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
+    public:
+        CVController(CStoryboard *pStoryboard, BOOL32 bIsSave = FALSE);
 
-    virtual ~CVController();
+        virtual ~CVController();
 
 //    void start(BOOL32 bIsSave);
 //
@@ -46,17 +44,18 @@ class CVController : public CController
 //
 //    void seekTo(s32 nClipIndex);
 
-  private:
-    CVProcessor *m_pProcessor;
-    u8* m_pbyVBuf;
+    private:
+        CH264Dec *m_pH264Dec;
+    private:
+        int run();
 
-  private:
-    int run();
-    void handle(CStoryboard *pStoryboard);
-    s32 getSampleNum(CStoryboard *pStoryboard);
-    //输入输出都是解码后的声音数据(YUV)
-    BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
-};
+        void handle(CStoryboard *pStoryboard);
+
+        s32 getSampleNum(CStoryboard *pStoryboard);
+
+        //输入输出都是解码后的声音数据(YUV)
+        BOOL32 transform(u8 *pbyIn, u8 *pbyOut, void *ptATransParam);
+    };
 }
 
 #endif /* _PAOMIANTV_VCONTROLLER_H_ */

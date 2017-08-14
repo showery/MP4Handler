@@ -1,14 +1,16 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE:= mediasdk
-MEDIASDK_SRC_DIR    := source module/source processor/source controller/source
-MEDIASDK_INC_DIR    := include module/include processor/include controller/include
+MEDIASDK_SRC_DIR    := source module/source processor/source controller/source codec/source
+MEDIASDK_INC_DIR    := include module/include processor/include controller/include codec/include
 COMM_DIR    		 := ../common/include
 RENDER_DIR    	     := ../render/include
+CODEC_DIR    	     := ../codec/include
 MP4V2_DIR    	 	 := ../mp4v2/include
 INC_PATH    	 := $(MEDIASDK_INC_DIR)\
             $(RENDER_DIR)\
 			$(MP4V2_DIR)\
+			$(CODEC_DIR)\
 			$(COMM_DIR)
 MEDIASDK_SRC_CFILES		:= $(foreach i, $(MEDIASDK_SRC_DIR),$(wildcard $(LOCAL_PATH)/$(i)/*.c)) 
 # $(warning  $(MEDIASDK_SRC_CFILES))
@@ -34,7 +36,7 @@ ifeq ($(PWLIB_SUPPORT),1)
 endif
 
 LOCAL_PRELINK_MODULE:= false
-LOCAL_SHARED_LIBRARIES := render mp4v2
-LOCAL_LDLIBS += -lz -llog -ldl
+LOCAL_SHARED_LIBRARIES := render mp4v2 codec
+LOCAL_LDLIBS += -lz -llog -ldl -lGLESv2 -lEGL
 
 include $(BUILD_SHARED_LIBRARY)

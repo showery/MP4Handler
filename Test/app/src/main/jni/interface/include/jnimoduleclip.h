@@ -29,6 +29,7 @@ namespace paomiantv {
     class CJNIModuleClip : public CJNIModule {
     private:
         CClip *m_pClip;
+        static CLock m_SingleInstanceLock;
         std::vector<CJNIModuleFilter *> m_vJNIFilters;
         std::vector<CJNIModuleTransition *> m_vJNITransitions;
 

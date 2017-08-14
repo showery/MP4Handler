@@ -18,7 +18,6 @@
 
 #include "typedef.h"
 #include "producer.h"
-#include "../module/include/storyboard.h"
 
 namespace paomiantv {
 
@@ -35,7 +34,7 @@ namespace paomiantv {
         static void log_cb(MP4LogLevel loglevel, const s8 *fmt, va_list ap);
 
     public:
-        BOOL32 init();
+        BOOL32 init(s32 nVersion);
 
         void uninit();
 

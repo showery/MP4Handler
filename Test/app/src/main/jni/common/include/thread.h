@@ -26,11 +26,11 @@ namespace paomiantv {
     class CThread {
     public:
         CThread(ThreadTask task, void *data)
-                : m_data(data),
-                  m_task(task) {
+                : m_task(task),
+                  m_data(data) {
         }
 
-        ~CThread() {
+        virtual ~CThread() {
         }
 
         static void SetName(const s8 *pchName) {
@@ -60,7 +60,7 @@ namespace paomiantv {
                     break;
                 }
 
-                nErr = pthread_create(&m_thread, &attr, (void *(*)(void *)) m_task, m_data);
+                nErr = pthread_create(&m_thread, &attr, m_task, m_data);
                 if (nErr) {
                     LOGE("start failed, create thread failed!");
                     ret = FALSE;
@@ -76,7 +76,7 @@ namespace paomiantv {
             void *retv = NULL;
             int nErr = pthread_join(m_thread, (void **) &retv);
             if (nErr) {
-                LOGE("thread is not started errNO: %d",nErr);
+                LOGE("thread is not started errNO: %d", nErr);
             }
             return retv;
         }

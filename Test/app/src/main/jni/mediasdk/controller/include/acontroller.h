@@ -48,7 +48,6 @@ class CAController : public CController
 
   private:
     CAProcessor *m_pProcessor;
-    u8* m_pbyABuf;
 
   private:
     int run();

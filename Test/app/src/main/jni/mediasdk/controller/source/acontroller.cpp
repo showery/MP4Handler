@@ -15,15 +15,14 @@
 
 #include "acontroller.h"
 #include "aprocessor.h"
-#include "clipparser.h"
 #include "constant.h"
+#include "frame.h"
 
 namespace paomiantv {
     CAController::CAController(CStoryboard *pStoryboard, BOOL32 bIsSave)
             : CController(pStoryboard, bIsSave) {
         USE_LOG;
         m_pProcessor = new CAProcessor;
-        m_pbyABuf = (u8 *) malloc(MAX_AUDIO_FRAME_BUFFER_SIZE);
     }
 
     CAController::~CAController() {
@@ -31,10 +30,6 @@ namespace paomiantv {
         if (m_pProcessor != NULL) {
             delete m_pProcessor;
             m_pProcessor = NULL;
-        }
-        if (m_pbyABuf != NULL) {
-            free(m_pbyABuf);
-            m_pbyABuf = NULL;
         }
     }
 
@@ -48,16 +43,10 @@ namespace paomiantv {
             }
             if (!m_bIsStopped) {
                 m_pLock->unlock();
-                BOOL32 bIsLastSample = FALSE;
-                BOOL bIsSync = FALSE;
-                u32 uSize = 0;
-                u64 ullStartTm = 0;
-                u64 ullDuration = 0;
-                u64 ullRenderOffset = 0;
-                m_pStoryboard->getNextASpample(bIsLastSample, m_pbyABuf, uSize, ullStartTm,
-                                               ullDuration, ullRenderOffset, bIsSync);
+                TFrame* ptFrame = new TFrame;
+                m_pStoryboard->getNextASpample(ptFrame->isLast, ptFrame->data, ptFrame->size, ptFrame->startTm,
+                                               ptFrame->duration, ptFrame->renderOffset, ptFrame->isSync);
                 //decode
-
                 //transform
 
                 if (m_bIsSave) {

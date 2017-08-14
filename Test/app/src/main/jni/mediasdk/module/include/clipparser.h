@@ -22,106 +22,145 @@
 #include "stdlib.h"
 #include "clip.h"
 
-namespace paomiantv
-{
+namespace paomiantv {
 
-class CClip;
-class CClipParser
-{
-  public:
-    CClipParser(CClip *pClip);
+    class CClip;
 
-    virtual ~CClipParser();
+    class CClipParser {
+    public:
+        CClipParser(CClip *pClip);
 
-    BOOL32 parse();
+        virtual ~CClipParser();
 
-    void save(s8 *pchFilePath);
+        BOOL32 parse();
 
-    BOOL
-    getVidoeSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
-                       u64 &renderoffset,
-                       BOOL &isSync);
+        void save(s8 *pchFilePath);
 
-    BOOL
-    getVidoeSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
-                         u64 &renderoffset,
-                         BOOL &isSync);
+        BOOL
+        getVidoeSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                           u64 &renderoffset,
+                           BOOL &isSync);
 
-    BOOL
-    getAudioSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
-                       u64 &renderoffset,
-                       BOOL &isSync);
+        BOOL
+        getVidoeSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                             u64 &renderoffset,
+                             BOOL &isSync);
 
-    BOOL
-    getAudioSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
-                         u64 &renderoffset, BOOL &isSync);
+        BOOL
+        getAudioSampleById(u32 nId, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                           u64 &renderoffset,
+                           BOOL &isSync);
 
-    inline u32 getVSampleStartId();
-    inline u32 getVSampleEndId();
-    inline u32 getVSampleNum();
+        BOOL
+        getAudioSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
+                             u64 &renderoffset, BOOL &isSync);
 
-    inline u32 getASampleStartId();
-    inline u32 getASampleEndId();
-    inline u32 getASampleNum();
+        inline u32 getVSampleStartId();
 
-  private:
-    CClip *m_pClip;
-    s8 *m_pchLastSrc;
+        inline u32 getVSampleEndId();
 
-    MP4FileHandle m_Handle;
+        inline u32 getVSampleNum();
 
-    u32 m_uTimeScale;
-    u32 m_uTrackNum;
+        inline u32 getASampleStartId();
 
-    u32 m_uVTimeScale;
-    MP4TrackId m_uVTrackId;
-    u32 m_uVSampleNum;
-    u32 m_uVSampleMaxSize;
-    u64 m_ullDuration;
+        inline u32 getASampleEndId();
 
-    u32 m_uATimeScale;
-    MP4TrackId m_uATrackId;
-    u32 m_uASampleNum;
-    u32 m_uASampleMaxSize;
-    u64 m_ullADuration;
+        inline u32 getASampleNum();
 
-    MP4SampleId m_uVStartId;
-    MP4SampleId m_uVEndId;
+        inline BOOL getVideoSPS(u8 *&sps, u32 &size);
 
-    MP4SampleId m_uAStartId;
-    MP4SampleId m_uAEndId;
+        inline BOOL getVideoPPS(u8 *&sps, u32 &size);
 
-  private:
-    void initTrackId(const MP4TrackId uVTrackId, const u32 uSamplesNum, MP4SampleId &uVStartId, MP4SampleId &uVEndId);
-    void copyTrack(MP4TrackId trackId, MP4FileHandle pDstHandle, s64 startTime, s64 duration);
-    void reset();
+    private:
+        CClip *m_pClip;
+        s8 *m_pchLastSrc;
 
-};
-inline u32 CClipParser::getVSampleStartId()
-{
-    return m_uVStartId;
-}
-inline u32 CClipParser::getVSampleEndId()
-{
-    return m_uVEndId;
-}
-inline u32 CClipParser::getVSampleNum()
-{
-    return (m_uVEndId - m_uVStartId + 1);
-}
+        MP4FileHandle m_Handle;
 
-inline u32 CClipParser::getASampleStartId()
-{
-    return m_uAStartId;
-}
-inline u32 CClipParser::getASampleEndId()
-{
-    return m_uAEndId;
-}
-inline u32 CClipParser::getASampleNum()
-{
-    return (m_uAEndId - m_uAStartId + 1);
-}
+        u32 m_uTimeScale;
+        u32 m_uTrackNum;
+
+        u32 m_uVTimeScale;
+        MP4TrackId m_uVTrackId;
+        u32 m_uVSampleNum;
+        u32 m_uVSampleMaxSize;
+        u64 m_ullDuration;
+
+        u32 m_uATimeScale;
+        MP4TrackId m_uATrackId;
+        u32 m_uASampleNum;
+        u32 m_uASampleMaxSize;
+        u64 m_ullADuration;
+
+        MP4SampleId m_uVStartId;
+        MP4SampleId m_uVEndId;
+
+        MP4SampleId m_uAStartId;
+        MP4SampleId m_uAEndId;
+
+        u8 *m_pbySPS;
+        u32 m_uSPSLen;
+        u8 *m_pbyPPS;
+        u32 m_uPPSLen;
+
+    private:
+        void initTrackId(const MP4TrackId uVTrackId, const u32 uSamplesNum, MP4SampleId &uVStartId,
+                         MP4SampleId &uVEndId);
+
+        void copyTrack(MP4TrackId trackId, MP4FileHandle pDstHandle, s64 startTime, s64 duration);
+
+        void reset();
+
+        void initSpsPps();
+
+    };
+
+    inline u32 CClipParser::getVSampleStartId() {
+        return m_uVStartId;
+    }
+
+    inline u32 CClipParser::getVSampleEndId() {
+        return m_uVEndId;
+    }
+
+    inline u32 CClipParser::getVSampleNum() {
+        return (m_uVEndId - m_uVStartId + 1);
+    }
+
+    inline u32 CClipParser::getASampleStartId() {
+        return m_uAStartId;
+    }
+
+    inline u32 CClipParser::getASampleEndId() {
+        return m_uAEndId;
+    }
+
+    inline u32 CClipParser::getASampleNum() {
+        return (m_uAEndId - m_uAStartId + 1);
+    }
+
+    inline BOOL CClipParser::getVideoSPS(u8 *&sps, u32 &size) {
+
+        if(m_uSPSLen==0){
+            return false;
+        }else{
+            sps = (u8*)malloc(m_uSPSLen);
+            memcpy(sps,m_pbySPS,m_uSPSLen);
+            size=m_uSPSLen;
+            return true;
+        }
+    }
+
+    inline BOOL CClipParser::getVideoPPS(u8 *&pps, u32 &size) {
+        if(m_uPPSLen==0){
+            return false;
+        }else{
+            pps = (u8*)malloc(m_uPPSLen);
+            memcpy(pps,m_pbyPPS,m_uPPSLen);
+            size=m_uPPSLen;
+            return true;
+        }
+    }
 }
 
 #endif /* _PAOMIANTV_CLIPPARSE_H_ */

@@ -20,7 +20,7 @@
 #include "jnimoduletransition.h"
 
 namespace paomiantv {
-
+    CLock CJNIModuleTransition::m_SingleInstanceLock;
     TJavaClazzParam *CJNIModuleTransition::GetJavaClazzParam() {
         TJavaClazzParam *ptJavaClazzParam = new TJavaClazzParam;
         JNINativeMethod arrMethods[] =
@@ -197,10 +197,15 @@ namespace paomiantv {
 
             jint nValue = env->GetIntField(jTransition, jfld);
             if (nValue == 0 || !CJNIModuleManager::getInstance()->contains((CJNIModuleTransition *) nValue)) {
-                //LOGE("get jni Transition from java object failed");
-                //return NULL;
-                LOGI("try to get a new CJNIModuleTransition");
-                ret = CreateJniTransition(env, jTransition);
+                m_SingleInstanceLock.lock();
+                if (!env->GetIntField(jTransition, jfld) ||
+                    !CJNIModuleManager::getInstance()->contains((CJNIModuleTransition *) nValue)) {
+
+                    LOGI("try to get a new CJNIModuleTransition");
+                    ret = CreateJniTransition(env, jTransition);
+                }
+                m_SingleInstanceLock.unlock();
+
             } else {
                 ret = (CJNIModuleTransition *) nValue;
             }

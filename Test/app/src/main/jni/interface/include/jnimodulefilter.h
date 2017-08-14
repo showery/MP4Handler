@@ -29,6 +29,7 @@ namespace paomiantv {
 
     private:
         CFilter *m_pFilter;
+        static CLock m_SingleInstanceLock;
 
     public:
         static TJavaClazzParam *GetJavaClazzParam();

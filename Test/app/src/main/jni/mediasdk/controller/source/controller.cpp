@@ -23,6 +23,7 @@ namespace paomiantv {
               m_pStoryboard(pStoryboard),
               m_bIsStopped(FALSE),
               m_bIsPaused(FALSE),
+              m_bIsStarted(FALSE),
               m_nPreviewFromClipIndex(0),
               m_nPreviewToClipIndex(-1) {
         USE_LOG;
@@ -32,23 +33,26 @@ namespace paomiantv {
 
     CController::~CController() {
         USE_LOG;
-        if (m_pLock != NULL) {
-            m_pLock = new CLock;
-            m_pLock = NULL;
-        }
+        stop();
         if (m_pThread != NULL) {
             delete m_pThread;
             m_pThread = NULL;
+        }
+        if (m_pLock != NULL) {
+            m_pLock = new CLock;
+            m_pLock = NULL;
         }
 
     }
 
 //static
     void *CController::ThreadWrapper(void *pThis) {
-        CThread::SetName(typeid(*pThis).name());
-        CController *p = (CController *) pThis;
-        int nErr = p->run();
-        return (void *) nErr;
+        CThread::SetName(typeid(*((CController *) pThis)).name());
+        return (void *) ((CController *) pThis)->run();
+    }
+
+    int CController::run() {
+        USE_LOG;
     }
 
 

@@ -21,7 +21,7 @@
 #include "jnicommon.h"
 
 namespace paomiantv {
-
+    CLock CJNIModuleStoryboard::m_SingleInstanceLock;
     void JNIModuleStoryboard_OnFailed(void *delegate, s32 nErr, s8 *pchDescription) {
         if (delegate != NULL) {
             ((CJNIModuleStoryboard *) delegate)->failedCallback(nErr, pchDescription);
@@ -56,8 +56,8 @@ namespace paomiantv {
                         {"_setBGM",         "(Ljava/lang/String;JJJJ)Z",           (void *) jni_setBGM},
                         {"_addClip",        "(Lcn/paomiantv/mediasdk/PMClip;)Z",   (void *) jni_addClip},
                         {"_replaceClip",    "(ILcn/paomiantv/mediasdk/PMClip;)Z",  (void *) jni_replaceClip},
-                        {"_insertClip",     "(ILcn/paomiantv/mediasdk/PMClip;)Z",  (void *) jni_insertClip},
-                        {"_removeClip",     "(I)Lcn/paomiantv/mediasdk/PMClip",    (void *) jni_removeClip},
+                        {"_intertClip",     "(ILcn/paomiantv/mediasdk/PMClip;)Z",  (void *) jni_insertClip},
+                        {"_removeClip",     "(I)Lcn/paomiantv/mediasdk/PMClip;",    (void *) jni_removeClip},
                         {"_getClip",        "(I)Lcn/paomiantv/mediasdk/PMClip;",   (void *) jni_getClip},
                         {"_swapClip",       "(II)Z",                               (void *) jni_swapClip},
                         {"_getClipCount",   "()I",                                 (void *) jni_getClipCount},
@@ -72,7 +72,7 @@ namespace paomiantv {
     }
 
     CJNIModuleStoryboard::CJNIModuleStoryboard(JNIEnv *env, jobject jStoryboard, jclass jcls,
-                                               jfieldID jfld) {
+                                               jfieldID jfld):jrenderer(NULL) {
         USE_LOG;
         m_vJNIClips.clear();
         if (env == NULL || jStoryboard == NULL || jcls == NULL || jfld == NULL) {
@@ -256,10 +256,15 @@ namespace paomiantv {
             jint nValue = env->GetIntField(jStoryboard, jfld);
             if (nValue == 0 ||
                 !CJNIModuleManager::getInstance()->contains((CJNIModuleStoryboard *) nValue)) {
-                LOGE("get jni storyboard from java object failed");
-                break;
-//            LOGI("try to get a new CJNIModuleStoryboard");
-//            ret = CreateJniStoryboard(env, jStoryboard);
+
+                m_SingleInstanceLock.lock();
+                if (!env->GetIntField(jStoryboard, jfld) ||
+                    !CJNIModuleManager::getInstance()->contains((CJNIModuleRenderer *) nValue)) {
+
+                    LOGI("try to get a new CJNIModuleStoryboard");
+                    ret = CreateJniStoryboard(env, jStoryboard);
+                }
+                m_SingleInstanceLock.unlock();
             } else {
                 ret = (CJNIModuleStoryboard *) nValue;
             }
@@ -277,7 +282,7 @@ namespace paomiantv {
 
     jboolean CJNIModuleStoryboard::jni_init(JNIEnv *env, jobject jstoryboard, jstring jdstPath) {
         USE_LOG;
-        CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::CreateJniStoryboard(env,
+        CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                          jstoryboard);
         if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
             return FALSE;
@@ -352,8 +357,7 @@ namespace paomiantv {
         return pJNIStoryboard->replaceClip(jindex, pJNIClip);
     }
 
-    jboolean
-    CJNIModuleStoryboard::jni_insertClip(JNIEnv *env, jobject jstoryboard, jint jindex,
+    jboolean CJNIModuleStoryboard::jni_insertClip(JNIEnv *env, jobject jstoryboard, jint jindex,
                                          jobject jclip) {
         USE_LOG;
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
@@ -421,6 +425,7 @@ namespace paomiantv {
         CJNIModuleStoryboard *pJNIStoryboard = CJNIModuleStoryboard::GetJniStoryboard(env,
                                                                                       jstoryboard);
         if (pJNIStoryboard == NULL || pJNIStoryboard->getCStoryboard() == NULL) {
+            LOGE("jnistoryboard failed, or storyboard is NULL");
             return FALSE;
         }
         CJNIModuleRenderer *pJNIRenderer = CJNIModuleRenderer::GetJniRenderer(env, jrenderer);

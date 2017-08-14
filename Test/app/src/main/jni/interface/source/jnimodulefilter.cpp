@@ -20,7 +20,7 @@
 #include "jnimodulefilter.h"
 
 namespace paomiantv {
-
+    CLock CJNIModuleFilter::m_SingleInstanceLock;
     TJavaClazzParam *CJNIModuleFilter::GetJavaClazzParam() {
         TJavaClazzParam *ptJavaClazzParam = new TJavaClazzParam;
         JNINativeMethod arrMethods[] =
@@ -198,8 +198,14 @@ namespace paomiantv {
                 !CJNIModuleManager::getInstance()->contains((CJNIModuleFilter *) nValue)) {
                 //LOGE("get jni Filter from java object failed");
                 //return NULL;
-                LOGI("try to get a new CJNIModuleFilter");
-                ret = CreateJniFilter(env, jFilter);
+                m_SingleInstanceLock.lock();
+                if(!env->GetIntField(jFilter, jfld) ||
+                   !CJNIModuleManager::getInstance()->contains((CJNIModuleFilter *) nValue)){
+                    LOGI("try to get a new CJNIModuleFilter");
+                    ret = CreateJniFilter(env, jFilter);
+                }
+                m_SingleInstanceLock.unlock();
+
             } else {
                 ret = (CJNIModuleFilter *) nValue;
             }
@@ -218,7 +224,7 @@ namespace paomiantv {
     jboolean CJNIModuleFilter::jni_init(JNIEnv *env, jobject jFilter, jstring jsrc, jlong jstart,
                                         jlong jduration) {
         USE_LOG;
-        CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::CreateJniFilter(env, jFilter);
+        CJNIModuleFilter *pJNIFilter = CJNIModuleFilter::GetJniFilter(env, jFilter);
         if (pJNIFilter == NULL || pJNIFilter->getFilter() == NULL) {
             return FALSE;
         }

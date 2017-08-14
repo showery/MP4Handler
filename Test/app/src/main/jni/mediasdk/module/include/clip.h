@@ -207,6 +207,10 @@ class CClip
     getAudioSampleByTime(u64 ullTimestamp, u8 *&buff, u32 &size, u64 &starttime, u64 &duration,
                          u64 &renderoffset, BOOL &isSync);
 
+    BOOL getVideoSPS(u8 *&sps, u32 &size);
+
+    BOOL getVideoPPS(u8 *&sps, u32 &size);
+
      u32 getVSampleStartId();
      u32 getVSampleEndId();
      u32 getVSampleNum();
